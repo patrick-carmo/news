@@ -1,9 +1,11 @@
 import { UtilsService } from '../services/utils.service';
 import { NewsService } from './../services/news.service';
 import { Component, OnInit } from '@angular/core';
+import { Browser } from '@capacitor/browser';
 import { Clipboard } from '@capacitor/clipboard';
 import { Share } from '@capacitor/share';
 import { InfiniteScrollCustomEvent } from '@ionic/angular';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -15,7 +17,8 @@ export class HomePage implements OnInit {
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
-  constructor(private newsService: NewsService, private utils: UtilsService) {}
+
+  constructor(private newsService: NewsService, public utils: UtilsService, public auth: AuthService) {}
 
   ngOnInit() {
     this.generateItems();
@@ -60,7 +63,7 @@ export class HomePage implements OnInit {
       (
         (ev as InfiniteScrollCustomEvent).target as HTMLIonInfiniteScrollElement
       ).complete();
-    }, this.qtyItems);
+    }, 3000);
   }
 
   async copyLink(link: string) {
@@ -83,5 +86,9 @@ export class HomePage implements OnInit {
         url,
       });
     } catch {}
+  }
+
+  async openNews(url: string) {
+    await Browser.open({ url });
   }
 }

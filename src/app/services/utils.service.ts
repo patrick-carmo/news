@@ -16,4 +16,8 @@ export class UtilsService {
 
     toastMessage.present();
   }
+
+  public teste(){
+    return import.meta.env['NG_APP_API_KEY']
+  }
 }
