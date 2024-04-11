@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,17 @@ import { Component } from '@angular/core';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
-  constructor() {}
+  constructor(private auth: AuthService) {}
+
+  async signOut() {
+    await this.auth.signOut();
+  }
+
+  async getUser() {
+    console.log(await this.auth.getUser())
+  }
+
+  async verifyToken(){
+    await this.auth.verifyToken()
+  }
 }

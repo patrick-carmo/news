@@ -1,3 +1,7 @@
+ion-content{
+ --background: url('../../assets/img/fundo.jpg');
+}
+
 #container {
   text-align: center;
   display: flex;
@@ -8,14 +12,6 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-}
-
-#login-container{
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  gap: 10px;
-  max-width: 500px;
 }
 
 #container strong {
@@ -35,3 +31,33 @@
 #container a {
   text-decoration: none;
 }
+
+
+#login-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 10px;
+  max-width: 300px;
+
+  background-color: var(--login);
+
+  border-radius: 20px;
+}
+
+h1{
+  font-size: 3rem;
+  line-height: 30px;
+  margin: 20px;
+}
+
+#logo{
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+// .flex{
+//   display: flex;
+//   justify-content: center;
+//   gap: 10px;
+// }

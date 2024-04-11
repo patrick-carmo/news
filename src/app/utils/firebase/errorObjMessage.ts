@@ -2,8 +2,14 @@ export const firebaseErrorObj: any = {
   'auth/claims-too-large':
     'A carga útil de dados do usuário é muito grande. Tente novamente mais tarde.',
 
+  "auth/missing-email": 'O endereço de e-mail é obrigatório.',
+
+  "auth/missing-password": 'A senha é obrigatória.',
+
   'auth/email-already-exists':
     'Este endereço de e-mail já está em uso. Tente usar outro endereço ou faça login.',
+
+    "auth/popup-closed-by-user": 'Login cancelado.',
 
   'auth/email-already-in-use':
     'Este endereço de e-mail já está em uso. Tente usar outro endereço ou faça login.',

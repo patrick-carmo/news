@@ -1,11 +1,31 @@
 <ion-content [fullscreen]="true">
   <div id="container">
-    <div id="login-container">
+    <form #loginForm="ngForm" id="login-container" (keyup.enter)="emailAuth(this.email, this.password)">
+
+      <img src="../../assets/img/ibge-logo-6.png" id="logo">
       <h1>Login</h1>
-      <ion-input fill="outline" shape="round" label="Email:" labelPlacement="floating"></ion-input>
+
+      <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" ngModel type="email" required [(ngModel)]="email"></ion-input>
+
+      <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" ngModel type="password" required [(ngModel)]="password"></ion-input>
+
       <div>
-        <ion-input type="email" fill="outline" shape="round" label="Email" labelPlacement="floating" helperText="Enter a valid email" errorText="Invalid email" ngModel email></ion-input>
+        <ion-button fill="clear" shape="round">Esqueceu a senha?</ion-button>
+        <ion-button fill="clear" shape="round" (click)="googleAuth()">
+          <ion-icon name="logo-google"></ion-icon>
+        </ion-button>
       </div>
-    </div>
+
+      <div class="flex">
+        <ion-button shape="round" (click)="emailAuth(this.email, this.password)">Enviar</ion-button>
+        <ion-button (click)="loginForm.reset()" color="medium" shape="round">Limpar</ion-button>
+      </div>
+
+      <div *ngIf="error">
+        <p style="color: red;">
+          {{error}}
+        </p>
+      </div>
+    </form>
   </div>
 </ion-content>
