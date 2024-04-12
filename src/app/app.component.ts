@@ -12,12 +12,4 @@ export class AppComponent {
   async signOut() {
     await this.auth.signOut();
   }
-
-  async getUser() {
-    console.log(await this.auth.getUser())
-  }
-
-  async verifyToken(){
-    await this.auth.verifyToken()
-  }
 }

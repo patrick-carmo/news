@@ -20,9 +20,8 @@
           </ion-item>
         </ion-menu-toggle>
         <ion-menu-toggle>
-          <ion-item>
+          <ion-item (click)="signOut()">
             <ion-label>Sair</ion-label>
-            <ion-button (click)="verifyToken()"></ion-button>
             <ion-icon name="exit-sharp" slot="start"></ion-icon>
           </ion-item>
         </ion-menu-toggle>

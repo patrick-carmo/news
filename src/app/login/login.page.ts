@@ -16,7 +16,7 @@ export class LoginPage {
   private messageTimeout: any;
 
   constructor(
-    private auth: AuthService,
+    public auth: AuthService,
     private loadingControler: LoadingController,
     private router: Router
   ) {}
@@ -30,30 +30,30 @@ export class LoginPage {
   }
 
   async emailAuth(email: string, password: string) {
-    this.showLoading();
+    await this.showLoading();
     const error = await this.auth.emailSignIn(email, password);
-    this.dimisLoading();
+    await this.dimisLoading();
 
     error ? this.errorMessage(error) : this.router.navigate(['/']);
   }
 
   async googleAuth() {
-    this.showLoading();
+    await this.showLoading();
     const error = await this.auth.googleSignIn();
-    this.dimisLoading();
+    await this.dimisLoading();
 
     error ? this.errorMessage(error) : this.router.navigate(['/']);
   }
 
-  async showLoading() {
+  private async showLoading() {
     this.loading = await this.loadingControler.create({
       message: 'Enviando...',
     });
 
-    this.loading.present();
+    await this.loading.present();
   }
 
-  async dimisLoading() {
+  private async dimisLoading() {
     if (this.loading) {
       await this.loading.dismiss();
     }

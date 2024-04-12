@@ -13,11 +13,10 @@ export class AuthService {
 
   async createUser(email: string, password: string) {
     try {
-      const data = await this.auth.createUserWithEmailAndPassword(
+      await this.auth.createUserWithEmailAndPassword(
         email,
         password
       );
-      await this.setToken(data);
 
       return;
     } catch (error) {
@@ -27,8 +26,8 @@ export class AuthService {
 
   async emailSignIn(email: string, password: string) {
     try {
-      const data = await this.auth.signInWithEmailAndPassword(email, password);
-      await this.setToken(data);
+      await this.auth.signInWithEmailAndPassword(email, password);
+
       return;
     } catch (error) {
       return firebaseError(error);
@@ -38,8 +37,7 @@ export class AuthService {
   async googleSignIn() {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      const data = await this.auth.signInWithPopup(provider);
-      await this.setToken(data);
+      await this.auth.signInWithPopup(provider);
 
       return;
     } catch (error) {
@@ -83,19 +81,21 @@ export class AuthService {
     }
   }
 
-  async verifyToken() {
-    try {
-      const token = await this.getToken();
-
-      if (!token) {
-        return this.router.navigate(['/login']);
-      }
-
-      const data = await this.auth.signInWithCustomToken(token);
-      return await this.setToken(data);
-    } catch (error) {
-      return firebaseError(error);
-    }
+  async isLogged(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.auth.authState.subscribe(
+        (user) => {
+          if (user) {
+            resolve(user);
+          } else {
+            reject('Usuário não logado');
+          }
+        },
+        (error) => {
+          reject(error);
+        }
+      );
+    });
   }
 
   async getUser() {
@@ -107,22 +107,21 @@ export class AuthService {
     }
   }
 
-  async getToken() {
+  async getToken(key: string) {
     try {
-      const token = await Preferences.get({ key: 'token' });
+      const token = await Preferences.get({ key });
       return token.value;
     } catch (error) {
-      return firebaseError(error);
+      return 'Erro interno do servidor'
     }
   }
 
-  async setToken(data: any) {
+  async setToken(key: string, value: any) {
     try {
-      const token = await data.user?.getIdToken();
-      if (token) await Preferences.set({ key: 'token', value: token });
+      await Preferences.set({ key, value });
       return;
     } catch (error) {
-      return firebaseError(error);
+      return 'Erro interno do servidor'
     }
   }
 }
