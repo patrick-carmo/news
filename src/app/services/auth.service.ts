@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
-import { firebaseError } from '../utils/firebase/errorFirebase';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
+import { firebaseError } from '../utils/errorFirebase';
 
 @Injectable({
   providedIn: 'root',
@@ -13,10 +13,7 @@ export class AuthService {
 
   async createUser(email: string, password: string) {
     try {
-      await this.auth.createUserWithEmailAndPassword(
-        email,
-        password
-      );
+      await this.auth.createUserWithEmailAndPassword(email, password);
 
       return;
     } catch (error) {
@@ -81,21 +78,31 @@ export class AuthService {
     }
   }
 
-  async isLogged(): Promise<any> {
+  async isLogged() {
     return new Promise((resolve, reject) => {
-      this.auth.authState.subscribe(
+      return this.auth.authState.subscribe(
         (user) => {
           if (user) {
-            resolve(user);
+            this.refreshToken(user);
+            resolve(true);
           } else {
-            reject('Usuário não logado');
+            reject(false);
           }
         },
-        (error) => {
-          reject(error);
+        () => {
+          reject(false);
         }
       );
     });
+  }
+
+  async refreshToken(user: any) {
+    try {
+      await user?.getIdTokenResult(true);
+      return true;
+    } catch (error) {
+      return null;
+    }
   }
 
   async getUser() {
@@ -107,21 +114,21 @@ export class AuthService {
     }
   }
 
-  async getToken(key: string) {
+  async getStorage(key: string) {
     try {
-      const token = await Preferences.get({ key });
-      return token.value;
+      const result = await Preferences.get({ key });
+      return result.value;
     } catch (error) {
-      return 'Erro interno do servidor'
+      return 'Erro interno do servidor';
     }
   }
 
-  async setToken(key: string, value: any) {
+  async setStorage(key: string, value: any) {
     try {
       await Preferences.set({ key, value });
       return;
     } catch (error) {
-      return 'Erro interno do servidor'
+      return 'Erro interno do servidor';
     }
   }
 }

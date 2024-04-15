@@ -5,18 +5,14 @@
       <img src="../../assets/img/ibge-logo-6.png" id="logo">
       <h1>Login</h1>
 
-      <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" ngModel type="email" required [(ngModel)]="email"></ion-input>
+      <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
 
-      <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" ngModel type="password" required [(ngModel)]="password"></ion-input>
+      <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
 
       <div>
         <ion-button fill="clear" shape="round">Criar Conta</ion-button>
         <ion-button fill="clear" shape="round">Esqueceu a senha?</ion-button>
-        <ion-button fill="clear" shape="round" (click)="googleAuth()">
-          <ion-icon name="logo-google"></ion-icon>
-        </ion-button>
       </div>
-
       <div class="flex">
         <ion-button shape="round" (click)="emailAuth(this.email, this.password)">Enviar</ion-button>
         <ion-button (click)="loginForm.reset()" color="medium" shape="round">Limpar</ion-button>

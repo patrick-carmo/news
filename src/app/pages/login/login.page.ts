@@ -1,12 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../services/auth.service';
-import { LoadingController } from '@ionic/angular';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonButton,
+  LoadingController,
+  IonInput,
+  MenuController,
+} from '@ionic/angular/standalone';
+import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
+  standalone: true,
+  imports: [
+    IonInput,
+    IonButton,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    CommonModule,
+    FormsModule,
+  ],
 })
 export class LoginPage {
   email: string = '';
@@ -18,8 +40,16 @@ export class LoginPage {
   constructor(
     public auth: AuthService,
     private loadingControler: LoadingController,
-    private router: Router
+    private router: Router,
+    private menu: MenuController
   ) {}
+
+  ionViewWillEnter(){
+    this.menu.enable(false);
+  }
+  ionViewWillLeave(){
+    this.menu.enable(true);
+  }
 
   private errorMessage(message: string) {
     this.error = message;
@@ -38,9 +68,7 @@ export class LoginPage {
   }
 
   async googleAuth() {
-    await this.showLoading();
     const error = await this.auth.googleSignIn();
-    await this.dimisLoading();
 
     error ? this.errorMessage(error) : this.router.navigate(['/']);
   }
