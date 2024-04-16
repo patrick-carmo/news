@@ -1,28 +1,56 @@
 <ion-content [fullscreen]="true">
   <div id="container">
-    <form #loginForm="ngForm" id="login-container" (keyup.enter)="emailAuth(this.email, this.password)">
+    <div  id="login-container">
+      <ion-segment [(ngModel)]="type">
+        <ion-segment-button value="login">
+          <ion-label>Login</ion-label>
+          <ion-icon name="log-in-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="register">
+          <ion-label>Cadastrar</ion-label>
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
+      @if(type==='login'){
+      <form #loginForm="ngForm" (keyup.enter)="emailAuth(this.email, this.password)" class="form">
+        <img src="../../assets/img/ibge-logo-6.png" id="logo">
+        <h1>Login</h1>
 
-      <img src="../../assets/img/ibge-logo-6.png" id="logo">
-      <h1>Login</h1>
+        <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
 
-      <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
+        <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
 
-      <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
+        <div>
+          <ion-button fill="clear" shape="round" size="small" (click)="openModal()">Esqueceu a senha?</ion-button>
+        </div>
+        <div class="flex">
+          <ion-button shape="round" (click)="emailAuth(this.email, this.password)" size="small">Logar</ion-button>
+          <ion-button (click)="loginForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
+        </div>
+      </form>
+      }
+      @if(type==='register'){
+      <form #registerForm="ngForm" (keyup.enter)="emailRegister(this.name, this.email, this.password)" class="form" autocomplete="off">
+        <img src="../../assets/img/ibge-logo-6.png" id="logo">
+        <h1>Cadastrar</h1>
 
-      <div>
-        <ion-button fill="clear" shape="round">Criar Conta</ion-button>
-        <ion-button fill="clear" shape="round">Esqueceu a senha?</ion-button>
-      </div>
-      <div class="flex">
-        <ion-button shape="round" (click)="emailAuth(this.email, this.password)">Enviar</ion-button>
-        <ion-button (click)="loginForm.reset()" color="medium" shape="round">Limpar</ion-button>
-      </div>
+        <ion-input fill="outline" shape="round" label="Nome:" labelPlacement="floating" name="name" type="name" required [(ngModel)]="name"></ion-input>
 
+        <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
+
+        <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
+
+        <div class="flex">
+          <ion-button shape="round" (click)="emailRegister(this.name, this.email, this.password)" size="small">Cadastrar</ion-button>
+          <ion-button (click)="registerForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
+        </div>
+      </form>
+      }
       <div *ngIf="error">
         <p style="color: red;">
           {{error}}
         </p>
       </div>
-    </form>
+    </div>
   </div>
 </ion-content>

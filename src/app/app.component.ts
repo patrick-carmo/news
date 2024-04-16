@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   IonApp,
@@ -15,9 +15,14 @@ import {
   IonMenuToggle,
   IonRouterLink,
 } from '@ionic/angular/standalone';
-import { AuthService } from './services/auth.service';
 import { addIcons } from 'ionicons';
-import { exitSharp, newspaperSharp, personSharp } from 'ionicons/icons';
+import {
+  exitSharp,
+  newspaperSharp,
+  personCircle,
+  personSharp,
+} from 'ionicons/icons';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -45,10 +50,10 @@ export class AppComponent {
     addIcons({
       'newspaper-sharp': newspaperSharp,
       'person-sharp': personSharp,
-      'exit-sharp': exitSharp
-    })
+      'exit-sharp': exitSharp,
+      'person-circle': personCircle,
+    });
   }
-
   async logout() {
     await this.auth.signOut();
   }

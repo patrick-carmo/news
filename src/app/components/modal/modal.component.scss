@@ -1,0 +1,16 @@
+ion-header{
+  text-align: center;
+  padding-top: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+#message{
+  font-size: 1.1rem;
+  text-align: center;
+}

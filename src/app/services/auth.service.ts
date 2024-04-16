@@ -11,9 +11,15 @@ import { firebaseError } from '../utils/errorFirebase';
 export class AuthService {
   constructor(private auth: AngularFireAuth, private router: Router) {}
 
-  async createUser(email: string, password: string) {
+  async createUser(name: string, email: string, password: string) {
     try {
-      await this.auth.createUserWithEmailAndPassword(email, password);
+      const user = await this.auth.createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      if (name) {
+        await user.user?.updateProfile({ displayName: name });
+      }
 
       return;
     } catch (error) {
@@ -23,9 +29,9 @@ export class AuthService {
 
   async emailSignIn(email: string, password: string) {
     try {
-      await this.auth.signInWithEmailAndPassword(email, password);
+      const user = await this.auth.signInWithEmailAndPassword(email, password);
 
-      return;
+      return user;
     } catch (error) {
       return firebaseError(error);
     }
@@ -105,10 +111,9 @@ export class AuthService {
     }
   }
 
-  async getUser() {
+  getUser() {
     try {
-      const user = await this.auth.currentUser;
-      return user;
+      return this.auth.authState;
     } catch {
       return null;
     }

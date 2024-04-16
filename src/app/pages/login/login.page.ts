@@ -9,10 +9,19 @@ import {
   IonButton,
   LoadingController,
   IonInput,
+  IonLabel,
+  IonSegment,
+  IonSegmentButton,
+  IonIcon,
   MenuController,
+  ModalController,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { addCircleOutline, enterOutline } from 'ionicons/icons';
+import { ModalComponent } from 'src/app/components/modal/modal.component';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +29,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
+    ModalComponent,
+    IonIcon,
     IonInput,
     IonButton,
     IonContent,
@@ -28,9 +39,15 @@ import { Router } from '@angular/router';
     IonToolbar,
     CommonModule,
     FormsModule,
+    IonLabel,
+    IonSegment,
+    IonSegmentButton,
+    IonIcon,
   ],
 })
 export class LoginPage {
+  type: 'login' | 'register' = 'login';
+  name: string = '';
   email: string = '';
   password: string = '';
   error: any;
@@ -41,14 +58,30 @@ export class LoginPage {
     public auth: AuthService,
     private loadingControler: LoadingController,
     private router: Router,
-    private menu: MenuController
-  ) {}
+    private menu: MenuController,
+    private modalCtrl: ModalController
+  ) {
+    addIcons({
+      'log-in-outline': enterOutline,
+      'add-circle-outline': addCircleOutline,
+    });
+  }
 
-  ionViewWillEnter(){
+  ionViewWillEnter() {
     this.menu.enable(false);
   }
-  ionViewWillLeave(){
+  ionViewWillLeave() {
     this.menu.enable(true);
+  }
+
+  async openModal() {
+    const modal = await this.modalCtrl.create({
+      component: ModalComponent,
+      cssClass: 'login-modal',
+      breakpoints: [0.1, 0.5, 0.9],
+      initialBreakpoint: 0.5,
+    });
+    await modal.present();
   }
 
   private errorMessage(message: string) {
@@ -61,7 +94,19 @@ export class LoginPage {
 
   async emailAuth(email: string, password: string) {
     await this.showLoading();
-    const error = await this.auth.emailSignIn(email, password);
+    const data = await this.auth.emailSignIn(email, password);
+    await this.dimisLoading();
+
+    if (typeof data === 'string') {
+      return this.errorMessage(data);
+    }
+
+    this.router.navigate(['/']);
+  }
+
+  async emailRegister(name: string, email: string, password: string) {
+    await this.showLoading();
+    const error = await this.auth.createUser(name, email, password);
     await this.dimisLoading();
 
     error ? this.errorMessage(error) : this.router.navigate(['/']);

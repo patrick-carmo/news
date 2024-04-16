@@ -45,6 +45,12 @@ ion-content{
   border-radius: 20px;
 }
 
+.form{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 h1{
   font-size: 3rem;
   line-height: 30px;
@@ -56,8 +62,8 @@ h1{
   margin: 0 auto;
 }
 
-// .flex{
-//   display: flex;
-//   justify-content: center;
-//   gap: 10px;
-// }
+.flex{
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

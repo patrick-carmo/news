@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Resetar a senha</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-input labelPlacement="stacked" label="Digite seu e-mail" [(ngModel)]="emailReset" placeholder="E-mail" type="text"></ion-input>
+  </ion-item>
+  <ion-item>
+    <div class="buttons">
+      <ion-button (click)="confirm()" [strong]="true">Enviar</ion-button>
+      <ion-button color="medium" (click)="cancel()">Cancelar</ion-button>
+    </div>
+  </ion-item>
+
+  <div id="message" *ngIf="message" class="ion-padding">
+    @if(success){
+    <ion-text color="success">
+      {{message}}
+    </ion-text>
+    }
+    @else{
+    <ion-text color="danger">
+      {{message}}
+    </ion-text>
+    }
+  </div>
+</ion-content>
