@@ -15,12 +15,11 @@ import {
   IonIcon,
   MenuController,
   ModalController,
-  ToastController,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, enterOutline } from 'ionicons/icons';
+import { addCircleOutline, enterOutline, fingerPrint } from 'ionicons/icons';
 import { ModalComponent } from 'src/app/components/modal/modal.component';
 
 @Component({
@@ -47,15 +46,20 @@ import { ModalComponent } from 'src/app/components/modal/modal.component';
 })
 export class LoginPage {
   type: 'login' | 'register' = 'login';
+
+  isNative: boolean = this.auth.isNative;
+
   name: string = '';
   email: string = '';
   password: string = '';
+
   error: any;
+
   private loading: any;
   private messageTimeout: any;
 
   constructor(
-    public auth: AuthService,
+    private auth: AuthService,
     private loadingControler: LoadingController,
     private router: Router,
     private menu: MenuController,
@@ -64,6 +68,7 @@ export class LoginPage {
     addIcons({
       'log-in-outline': enterOutline,
       'add-circle-outline': addCircleOutline,
+      'finger-print': fingerPrint
     });
   }
 
@@ -92,24 +97,46 @@ export class LoginPage {
     }, 5000);
   }
 
+  async biometryAuth() {
+    if (!this.isNative) return this.errorMessage('Biometria não disponível');
+
+    try {
+      const data = await this.auth.performBiometricVerification();
+      if (!data) return;
+
+      if (typeof data === 'string') {
+        return this.errorMessage(data);
+      }
+
+      await this.emailAuth(data.username, data.password);
+    } catch (error: any) {
+      const message = error.message;
+
+      if (message === 'No credentials found')
+        return this.errorMessage(
+          'O primeiro login deve ser realizado manualmente.'
+        );
+    }
+  }
+
   async emailAuth(email: string, password: string) {
     await this.showLoading();
-    const data = await this.auth.emailSignIn(email, password);
+    const error = await this.auth.emailSignIn(email, password);
     await this.dimisLoading();
 
-    if (typeof data === 'string') {
-      return this.errorMessage(data);
-    }
+    if (error) return this.errorMessage(error);
 
     this.router.navigate(['/']);
   }
 
-  async emailRegister(name: string, email: string, password: string) {
+  async emailRegister(email: string, password: string) {
     await this.showLoading();
-    const error = await this.auth.createUser(name, email, password);
+    const error = await this.auth.createUser(email, password);
     await this.dimisLoading();
 
-    error ? this.errorMessage(error) : this.router.navigate(['/']);
+    if (error) return this.errorMessage(error);
+
+    this.router.navigate(['/']);
   }
 
   async googleAuth() {

@@ -4,22 +4,71 @@ import firebase from 'firebase/compat/app';
 import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { firebaseError } from '../utils/errorFirebase';
+import { NativeBiometric } from 'capacitor-native-biometric';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private server: string = 'https://news-team-5.vercel.app/';
+
+  isNative: boolean = Capacitor.getPlatform() !== 'web' ? true : false;
+
   constructor(private auth: AngularFireAuth, private router: Router) {}
 
-  async createUser(name: string, email: string, password: string) {
+  async performBiometricVerification() {
     try {
-      const user = await this.auth.createUserWithEmailAndPassword(
-        email,
-        password
-      );
-      if (name) {
-        await user.user?.updateProfile({ displayName: name });
-      }
+      const result = await NativeBiometric.isAvailable();
+
+      if (!result.isAvailable) return 'Biometria não disponível';
+
+      const credentials = await this.getBiometricCredentials();
+
+      if (!credentials) return 'Credenciais não encontradas';
+
+      const verified = await NativeBiometric.verifyIdentity({
+        title: 'Autenticação',
+        maxAttempts: 5,
+      })
+        .then(() => true)
+        .catch(() => false);
+
+      if (!verified) return;
+
+      return credentials;
+    } catch (error: any) {
+      return error.message;
+    }
+  }
+
+  async setBiometricCredentials(email: string, password: string) {
+    await NativeBiometric.setCredentials({
+      server: this.server,
+      username: email,
+      password,
+    });
+  }
+
+  async getBiometricCredentials() {
+    const credentials = await NativeBiometric.getCredentials({
+      server: this.server,
+    });
+
+    return credentials;
+  }
+
+  async resetBiometricCredentials() {
+    await NativeBiometric.deleteCredentials({
+      server: this.server,
+    });
+  }
+
+  async createUser(email: string, password: string) {
+    try {
+      await this.auth.createUserWithEmailAndPassword(email, password);
+
+      if (this.isNative) await this.setBiometricCredentials(email, password);
 
       return;
     } catch (error) {
@@ -29,9 +78,11 @@ export class AuthService {
 
   async emailSignIn(email: string, password: string) {
     try {
-      const user = await this.auth.signInWithEmailAndPassword(email, password);
+      await this.auth.signInWithEmailAndPassword(email, password);
 
-      return user;
+      if (this.isNative) await this.setBiometricCredentials(email, password);
+
+      return;
     } catch (error) {
       return firebaseError(error);
     }
@@ -40,6 +91,7 @@ export class AuthService {
   async googleSignIn() {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
+
       await this.auth.signInWithPopup(provider);
 
       return;
@@ -56,6 +108,9 @@ export class AuthService {
   async resetPassword(email: string) {
     try {
       await this.auth.sendPasswordResetEmail(email);
+
+      if (this.isNative) await this.resetBiometricCredentials();
+
       return;
     } catch (error) {
       return firebaseError(error);
@@ -64,9 +119,10 @@ export class AuthService {
 
   async updatePassword(password: string) {
     try {
-      await this.auth.currentUser.then((user) => {
-        user?.updatePassword(password);
-      });
+      const user = await this.auth.currentUser;
+
+      if (user) await user.updatePassword(password);
+
       return;
     } catch (error) {
       return firebaseError(error);
@@ -112,11 +168,7 @@ export class AuthService {
   }
 
   getUser() {
-    try {
-      return this.auth.authState;
-    } catch {
-      return null;
-    }
+    return this.auth.currentUser;
   }
 
   async getStorage(key: string) {

@@ -1,6 +1,6 @@
 <ion-content [fullscreen]="true">
   <div id="container">
-    <div  id="login-container">
+    <div id="login-container">
       <ion-segment [(ngModel)]="type">
         <ion-segment-button value="login">
           <ion-label>Login</ion-label>
@@ -27,21 +27,25 @@
           <ion-button shape="round" (click)="emailAuth(this.email, this.password)" size="small">Logar</ion-button>
           <ion-button (click)="loginForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
+        <div>
+          <ion-button *ngIf="isNative" (click)="biometryAuth()" shape="round" fill="outline" size="small">
+            <ion-icon name="finger-print"></ion-icon>
+          </ion-button>
+        </div>
+
       </form>
       }
       @if(type==='register'){
-      <form #registerForm="ngForm" (keyup.enter)="emailRegister(this.name, this.email, this.password)" class="form" autocomplete="off">
+      <form #registerForm="ngForm" (keyup.enter)="emailRegister(this.email, this.password)" class="form" autocomplete="off">
         <img src="../../assets/img/ibge-logo-6.png" id="logo">
         <h1>Cadastrar</h1>
-
-        <ion-input fill="outline" shape="round" label="Nome:" labelPlacement="floating" name="name" type="name" required [(ngModel)]="name"></ion-input>
 
         <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
 
         <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
 
         <div class="flex">
-          <ion-button shape="round" (click)="emailRegister(this.name, this.email, this.password)" size="small">Cadastrar</ion-button>
+          <ion-button shape="round" (click)="emailRegister(this.email, this.password)" size="small">Cadastrar</ion-button>
           <ion-button (click)="registerForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
       </form>
@@ -51,6 +55,7 @@
           {{error}}
         </p>
       </div>
+
     </div>
   </div>
 </ion-content>

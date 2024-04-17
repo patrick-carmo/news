@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonHeader,
@@ -60,7 +60,7 @@ export class ModalComponent {
 
       this.success = true;
       return this.showMessage(
-        'E-mail de recuperação enviado com sucesso',
+        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.',
       );
     } catch (error) {
       return this.modalCtrl.dismiss(error, 'error');
