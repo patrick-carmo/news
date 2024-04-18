@@ -17,10 +17,10 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  exitSharp,
-  newspaperSharp,
-  personCircle,
-  personSharp,
+  codeWorkingOutline,
+  exitOutline,
+  newspaperOutline,
+  personCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from './services/auth.service';
 
@@ -46,15 +46,12 @@ import { AuthService } from './services/auth.service';
   ],
 })
 export class AppComponent {
-  constructor(private auth: AuthService) {
+  constructor(public auth: AuthService) {
     addIcons({
-      'newspaper-sharp': newspaperSharp,
-      'person-sharp': personSharp,
-      'exit-sharp': exitSharp,
-      'person-circle': personCircle,
+      newspaperOutline,
+      personCircleOutline,
+      exitOutline,
+      codeWorkingOutline
     });
-  }
-  async logout() {
-    await this.auth.signOut();
   }
 }

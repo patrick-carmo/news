@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { HeaderComponent } from 'src/app/components/header/header.component';
+import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  IonList,
+  IonItem,
   IonContent,
   IonHeader,
   IonTitle,
   IonToolbar,
-  IonItem,
-  IonList,
   IonButtons,
   IonMenuButton,
   IonImg,
@@ -20,12 +21,12 @@ import {
   IonCardSubtitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from 'src/app/components/header/header.component';
+import { register as registerSwiper } from 'swiper/element/bundle';
 
 @Component({
-  selector: 'app-perfil',
-  templateUrl: './perfil.page.html',
-  styleUrls: ['./perfil.page.scss', '../../app.component.scss'],
+  selector: 'app-devs',
+  templateUrl: './devs.page.html',
+  styleUrls: ['./devs.page.scss', '../../app.component.scss'],
   standalone: true,
   imports: [
     HeaderComponent,
@@ -49,7 +50,12 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
     IonCardSubtitle,
     IonCardContent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class PerfilPage {
+export class DevsPage {
   constructor() {}
+
+  ionViewWillEnter(){
+    registerSwiper()
+  }
 }

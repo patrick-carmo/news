@@ -30,14 +30,22 @@ import {
   ToastController,
   IonRefresher,
   IonRefresherContent,
+  IonInput,
 } from '@ionic/angular/standalone';
 import { NewsService } from 'src/app/services/news.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { addIcons } from 'ionicons';
-import { chevronDownCircleOutline, document, globe, shareSocialSharp } from 'ionicons/icons';
+import {
+  chevronDownCircleOutline,
+  document,
+  globe,
+  shareSocialSharp,
+} from 'ionicons/icons';
 import { HeaderComponent } from 'src/app/components/header/header.component';
+import { FormsModule } from '@angular/forms';
+import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 
 @Component({
   selector: 'app-home',
@@ -45,9 +53,12 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
   styleUrls: ['home.page.scss', '../../app.component.scss'],
   standalone: true,
   imports: [
+    HeaderComponent,
+    NewsItemsComponent,
+    IonInput,
     IonRefresher,
     CommonModule,
-    HeaderComponent,
+    FormsModule,
     IonInfiniteScroll,
     IonHeader,
     IonToolbar,
@@ -78,32 +89,43 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
   ],
 })
 export class HomePage implements OnInit {
-  public items: any = [];
+  items: any = [];
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
-  constructor(private news: NewsService, private toast: ToastController) {}
+  inSearch: boolean = false;
+  query: string = '';
+  searchItems: any = [];
+  private searchPage: number = 1;
 
-  generateItems(
-    arrayMethod: string,
-    qtyItems: number = 15,
-    page: number = 1
-  ) {
-    this.news.getNews(qtyItems, page).subscribe(
+  constructor(private news: NewsService, private toast: ToastController) {
+    addIcons({
+      shareSocialSharp,
+      document,
+      globe,
+      chevronDownCircleOutline,
+    });
+  }
+
+  private formatItems(data: any) {
+    return data.items.map((item: any) => {
+      const images = JSON.parse(item.imagens);
+      const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
+      return {
+        title: item.titulo,
+        intro: item.introducao,
+        date: item.data_publicacao ? item.data_publicacao.substring(0, 10) : '',
+        image: imageLink,
+        link: item.link,
+      };
+    });
+  }
+
+  private generateItems(page: number = 1, arrayMethod: string = 'push') {
+    this.news.getNews(this.qtyItems, page).subscribe(
       (data: any) => {
-        const items = data.items.map((item: any) => {
-          const images = JSON.parse(item.imagens);
-          const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
-          return {
-            title: item.titulo,
-            intro: item.introducao,
-            date: item.data_publicacao
-              ? item.data_publicacao.substring(0, 10)
-              : '',
-            image: imageLink,
-            link: item.link,
-          };
-        });
+        const items = this.formatItems(data);
+
         const filteredItems = items.filter(
           (newItem: any) =>
             !this.items.some((item: any) => item.link === newItem.link)
@@ -120,18 +142,48 @@ export class HomePage implements OnInit {
     );
   }
 
-  ngOnInit() {
-    addIcons({
-      shareSocialSharp,
-      document,
-      globe,
-      chevronDownCircleOutline,
-    });
-    this.generateItems('push');
+  search(arrayMethod: string = 'unshift') {
+    const query = this.query.toLowerCase().trim();
+    if (!query) {
+      this.inSearch = false;
+      this.searchItems = [];
+      return;
+    }
+
+    this.inSearch = true;
+
+    this.news.searchNews(this.qtyItems, this.searchPage, query).subscribe(
+      (data: any) => {
+        const items = this.formatItems(data);
+
+        const filteredItems = items.filter(
+          (newItem: any) =>
+            !this.searchItems.some((item: any) => item.link === newItem.link)
+        );
+
+        if (filteredItems.length > 0) {
+          this.searchItems[arrayMethod](...filteredItems);
+          this.searchPage++;
+          return;
+        }
+
+        this.toastMessage('Info', 'Nenhuma notícia encontrada');
+      },
+      async () => await this.toastMessage('Erro', 'Erro ao buscar notícias')
+    );
   }
 
-  onIonInfinite(ev: any) {
-    this.generateItems('push', this.qtyItems, this.page);
+  ngOnInit() {
+    this.generateItems();
+  }
+
+  onIonInfinite(ev: any, search: boolean = false) {
+    if (search) {
+      this.search('push');
+      console.log(this.searchPage);
+    } else {
+      this.generateItems(this.page);
+    }
     setTimeout(() => {
       (
         (ev as InfiniteScrollCustomEvent).target as HTMLIonInfiniteScrollElement
@@ -139,9 +191,17 @@ export class HomePage implements OnInit {
     }, 3000);
   }
 
-  handleRefresh(event: any) {
+  handleRefresh(event: any, search: boolean = false) {
     setTimeout(() => {
-      this.generateItems('unshift');
+      if (search) {
+        this.searchItems = [];
+        this.searchPage = 1;
+        this.search();
+      } else {
+        this.items = [];
+        this.page = 1;
+        this.generateItems(1, 'unshift');
+      }
       event.target.complete();
     }, 1000);
   }

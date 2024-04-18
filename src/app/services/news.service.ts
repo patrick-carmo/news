@@ -12,4 +12,10 @@ export class NewsService {
       `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}`
     );
   }
+  
+  searchNews(qtd: number = 10, page: number = 1, query: string) {
+    return this.http.get(
+      `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}&busca=${query}`
+    );
+  }
 }

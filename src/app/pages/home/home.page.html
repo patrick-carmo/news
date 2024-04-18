@@ -2,56 +2,24 @@
 
 <ion-content [fullscreen]="true">
   <div class="container">
-    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-      <ion-refresher-content
-        pullingIcon="chevron-down-circle-outline"
-        pullingText="Puxe para atualizar"
-        refreshingSpinner="crescent"
-        refreshingText="Atualizando..."
-      >
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event, inSearch)">
+      <ion-refresher-content pullingIcon="chevron-down-circle-outline" pullingText="Puxe para atualizar" refreshingSpinner="crescent" refreshingText="Atualizando...">
       </ion-refresher-content>
     </ion-refresher>
 
     <ion-list>
       <ion-item>
-        <ion-searchbar animated="true" placeholder="Pesquisar"></ion-searchbar>
+        <ion-searchbar animated="true" [debounce]="1000" placeholder="Pesquisar" [(ngModel)]="query" (ionInput)="search()"></ion-searchbar>
       </ion-item>
 
-      <ion-item *ngFor="let item of items" class="text-center">
-        <ion-card>
-          <ion-img src="{{item.image}}" alt="{{item.title}}"></ion-img>
-          <ion-card-header>
-            <ion-card-title>{{item.title}}</ion-card-title>
-            <ion-card-subtitle>{{item.date}}</ion-card-subtitle>
-          </ion-card-header>
-
-          <ion-card-content>{{item.intro}}</ion-card-content>
-
-          <ion-grid>
-            <ion-row class="ion-justify-content-center">
-              <ion-col>
-                <ion-button (click)="openNews(item.link)">Ler mais</ion-button>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-card>
-        <ion-fab horizontal="end" vertical="bottom" class="padding-right">
-          <ion-fab-button size="small">
-            <ion-icon name="share-social-sharp"></ion-icon>
-          </ion-fab-button>
-          <ion-fab-list side="top">
-            <ion-fab-button (click)="copyLink(item.link)">
-              <ion-icon name="document"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-button (click)="shareNews(item.link)">
-              <ion-icon name="globe"></ion-icon>
-            </ion-fab-button>
-          </ion-fab-list>
-        </ion-fab>
-      </ion-item>
+      @if(inSearch){
+      <app-news-items [news]="searchItems"></app-news-items>
+      }@else{
+      <app-news-items [news]="items"></app-news-items>
+      }
     </ion-list>
-    
-    <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+
+    <ion-infinite-scroll (ionInfinite)="onIonInfinite($event, inSearch)">
       <ion-infinite-scroll-content loadingText="Carregando..." loadingSpinner="crescent"></ion-infinite-scroll-content>
     </ion-infinite-scroll>
   </div>
