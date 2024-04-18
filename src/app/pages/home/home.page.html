@@ -2,6 +2,16 @@
 
 <ion-content [fullscreen]="true">
   <div class="container">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="chevron-down-circle-outline"
+        pullingText="Puxe para atualizar"
+        refreshingSpinner="crescent"
+        refreshingText="Atualizando..."
+      >
+      </ion-refresher-content>
+    </ion-refresher>
+
     <ion-list>
       <ion-item>
         <ion-searchbar animated="true" placeholder="Pesquisar"></ion-searchbar>
@@ -40,6 +50,7 @@
         </ion-fab>
       </ion-item>
     </ion-list>
+    
     <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
       <ion-infinite-scroll-content loadingText="Carregando..." loadingSpinner="crescent"></ion-infinite-scroll-content>
     </ion-infinite-scroll>

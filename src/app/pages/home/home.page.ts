@@ -28,13 +28,15 @@ import {
   IonToolbar,
   IonInfiniteScroll,
   ToastController,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { NewsService } from 'src/app/services/news.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { addIcons } from 'ionicons';
-import { document, globe, shareSocialSharp } from 'ionicons/icons';
+import { chevronDownCircleOutline, document, globe, shareSocialSharp } from 'ionicons/icons';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 
 @Component({
@@ -43,6 +45,7 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
   styleUrls: ['home.page.scss', '../../app.component.scss'],
   standalone: true,
   imports: [
+    IonRefresher,
     CommonModule,
     HeaderComponent,
     IonInfiniteScroll,
@@ -69,7 +72,9 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
     IonFabButton,
     IonFabList,
     IonIcon,
-    IonInfiniteScrollContent
+    IonInfiniteScrollContent,
+    IonRefresher,
+    IonRefresherContent,
   ],
 })
 export class HomePage implements OnInit {
@@ -79,17 +84,12 @@ export class HomePage implements OnInit {
 
   constructor(private news: NewsService, private toast: ToastController) {}
 
-  ngOnInit() {
-    addIcons({
-      "share-social-sharp": shareSocialSharp,
-      "document": document,
-      "globe": globe
-    })
-    this.generateItems();
-  }
-
-  private generateItems() {
-    this.news.getNews(this.qtyItems, this.page).subscribe(
+  generateItems(
+    arrayMethod: string,
+    qtyItems: number = 15,
+    page: number = 1
+  ) {
+    this.news.getNews(qtyItems, page).subscribe(
       (data: any) => {
         const items = data.items.map((item: any) => {
           const images = JSON.parse(item.imagens);
@@ -110,7 +110,7 @@ export class HomePage implements OnInit {
         );
 
         if (filteredItems.length > 0) {
-          this.items = [...this.items, ...filteredItems];
+          this.items[arrayMethod](...filteredItems);
           this.page++;
         }
       },
@@ -120,13 +120,30 @@ export class HomePage implements OnInit {
     );
   }
 
+  ngOnInit() {
+    addIcons({
+      shareSocialSharp,
+      document,
+      globe,
+      chevronDownCircleOutline,
+    });
+    this.generateItems('push');
+  }
+
   onIonInfinite(ev: any) {
-    this.generateItems();
+    this.generateItems('push', this.qtyItems, this.page);
     setTimeout(() => {
       (
         (ev as InfiniteScrollCustomEvent).target as HTMLIonInfiniteScrollElement
       ).complete();
     }, 3000);
+  }
+
+  handleRefresh(event: any) {
+    setTimeout(() => {
+      this.generateItems('unshift');
+      event.target.complete();
+    }, 1000);
   }
 
   async copyLink(link: string) {
@@ -151,7 +168,7 @@ export class HomePage implements OnInit {
     await Browser.open({ url });
   }
 
-  async toastMessage(header: string, message: string){
+  async toastMessage(header: string, message: string) {
     const toastMessage = await this.toast.create({
       header,
       message,
