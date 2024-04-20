@@ -22,6 +22,7 @@ import {
   IonCardContent,
 } from '@ionic/angular/standalone';
 import { register as registerSwiper } from 'swiper/element/bundle';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-devs',
@@ -53,7 +54,7 @@ import { register as registerSwiper } from 'swiper/element/bundle';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class DevsPage {
-  constructor() {}
+  constructor(public auth: AuthService) {}
 
   ionViewWillEnter(){
     registerSwiper()

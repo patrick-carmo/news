@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import firebase from 'firebase/compat/app';
 import { Router } from '@angular/router';
-import { Preferences } from '@capacitor/preferences';
 import { firebaseError } from '../utils/errorFirebase';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { Capacitor } from '@capacitor/core';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +15,10 @@ export class AuthService {
 
   isNative: boolean = Capacitor.getPlatform() !== 'web' ? true : false;
 
-  constructor(private auth: AngularFireAuth, private router: Router) {}
+  constructor(
+    private auth: AngularFireAuth,
+    private router: Router,
+  ) {}
 
   async performBiometricVerification() {
     try {
@@ -66,9 +69,14 @@ export class AuthService {
 
   async createUser(email: string, password: string) {
     try {
-      await this.auth.createUserWithEmailAndPassword(email, password);
+      const { user } = await this.auth.createUserWithEmailAndPassword(
+        email,
+        password
+      );
 
-      if (this.isNative) await this.setBiometricCredentials(email, password);
+      if (!user) return 'Erro ao criar conta';
+
+      user.sendEmailVerification();
 
       return;
     } catch (error) {
@@ -78,9 +86,17 @@ export class AuthService {
 
   async emailSignIn(email: string, password: string) {
     try {
-      await this.auth.signInWithEmailAndPassword(email, password);
+      const { user } = await this.auth.signInWithEmailAndPassword(
+        email,
+        password
+      );
 
-      if (this.isNative) await this.setBiometricCredentials(email, password);
+      if (!user?.emailVerified) {
+        user?.sendEmailVerification();
+        return 'Verifique seu e-mail para autenticar.';
+      }
+
+      if (this.isNative) this.setBiometricCredentials(email, password);
 
       return;
     } catch (error) {
@@ -109,7 +125,7 @@ export class AuthService {
     try {
       await this.auth.sendPasswordResetEmail(email);
 
-      if (this.isNative) await this.resetBiometricCredentials();
+      if (this.isNative) this.resetBiometricCredentials();
 
       return;
     } catch (error) {
@@ -168,24 +184,6 @@ export class AuthService {
   }
 
   getUser() {
-    return this.auth.currentUser;
-  }
-
-  async getStorage(key: string) {
-    try {
-      const result = await Preferences.get({ key });
-      return result.value;
-    } catch (error) {
-      return 'Erro interno do servidor';
-    }
-  }
-
-  async setStorage(key: string, value: any) {
-    try {
-      await Preferences.set({ key, value });
-      return;
-    } catch (error) {
-      return 'Erro interno do servidor';
-    }
+    return this.auth.user;
   }
 }

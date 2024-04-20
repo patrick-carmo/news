@@ -9,18 +9,24 @@ import {
   IonButton,
   LoadingController,
   IonInput,
+  IonInputPasswordToggle,
   IonLabel,
   IonSegment,
   IonSegmentButton,
   IonIcon,
   MenuController,
   ModalController,
+  IonText,
+  IonCheckbox,
+  IonToggle,
+  IonItem,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addCircleOutline, enterOutline, fingerPrint } from 'ionicons/icons';
 import { ModalComponent } from 'src/app/components/modal/modal.component';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +34,11 @@ import { ModalComponent } from 'src/app/components/modal/modal.component';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
+    IonItem,
+    IonToggle,
+    IonInputPasswordToggle,
+    IonCheckbox,
+    IonText,
     ModalComponent,
     IonIcon,
     IonInput,
@@ -48,6 +59,7 @@ export class LoginPage {
   type: 'login' | 'register' = 'login';
 
   isNative: boolean = this.auth.isNative;
+  hasBiometry: boolean = false;
 
   name: string = '';
   email: string = '';
@@ -55,11 +67,14 @@ export class LoginPage {
 
   error: any;
 
+  message: string = '';
+
   private loading: any;
   private messageTimeout: any;
 
   constructor(
     private auth: AuthService,
+    public storage: StorageService,
     private loadingControler: LoadingController,
     private router: Router,
     private menu: MenuController,
@@ -68,12 +83,15 @@ export class LoginPage {
     addIcons({
       'log-in-outline': enterOutline,
       'add-circle-outline': addCircleOutline,
-      'finger-print': fingerPrint
+      'finger-print': fingerPrint,
     });
   }
 
   ionViewWillEnter() {
     this.menu.enable(false);
+    this.storage.getBiometricPreferences().then((data) => {
+      if (data) this.hasBiometry = data;
+    });
   }
   ionViewWillLeave() {
     this.menu.enable(true);
@@ -89,42 +107,42 @@ export class LoginPage {
     await modal.present();
   }
 
-  private errorMessage(message: string) {
-    this.error = message;
+  private showMessage(message: string, sucess: boolean = false) {
+    const field = sucess ? 'message' : 'error';
+    this[field] = message;
     if (this.messageTimeout) clearTimeout(this.messageTimeout);
-    this.messageTimeout = setTimeout(() => {
-      this.error = null;
-    }, 5000);
+    this.messageTimeout = setTimeout(
+      () => {
+        this[field] = null;
+      },
+      sucess ? 5000 : 10000
+    );
   }
 
   async biometryAuth() {
-    if (!this.isNative) return this.errorMessage('Biometria não disponível');
+    if (!this.isNative) return this.showMessage('Biometria não disponível');
 
     try {
       const data = await this.auth.performBiometricVerification();
       if (!data) return;
 
       if (typeof data === 'string') {
-        return this.errorMessage(data);
+        return this.showMessage(data);
       }
 
       await this.emailAuth(data.username, data.password);
-    } catch (error: any) {
-      const message = error.message;
-
-      if (message === 'No credentials found')
-        return this.errorMessage(
-          'O primeiro login deve ser realizado manualmente.'
-        );
+    } catch {
+      this.showMessage('Erro interno do servidor');
     }
   }
 
   async emailAuth(email: string, password: string) {
     await this.showLoading();
+    this.storage.setBiometricPreferences(this.hasBiometry);
     const error = await this.auth.emailSignIn(email, password);
     await this.dimisLoading();
 
-    if (error) return this.errorMessage(error);
+    if (error) return this.showMessage(error);
 
     this.router.navigate(['/']);
   }
@@ -134,15 +152,15 @@ export class LoginPage {
     const error = await this.auth.createUser(email, password);
     await this.dimisLoading();
 
-    if (error) return this.errorMessage(error);
+    if (error) return this.showMessage(error);
 
-    this.router.navigate(['/']);
+    this;
   }
 
   async googleAuth() {
     const error = await this.auth.googleSignIn();
 
-    error ? this.errorMessage(error) : this.router.navigate(['/']);
+    error ? this.showMessage(error) : this.router.navigate(['/']);
   }
 
   private async showLoading() {

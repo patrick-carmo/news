@@ -18,7 +18,9 @@
 
         <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
 
-        <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password"></ion-input>
+        <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" type="password" required [(ngModel)]="password">
+          <ion-input-password-toggle slot="end" class="margin-left"></ion-input-password-toggle>
+        </ion-input>
 
         <div>
           <ion-button fill="clear" shape="round" size="small" (click)="openModal()">Esqueceu a senha?</ion-button>
@@ -28,7 +30,7 @@
           <ion-button (click)="loginForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
         <div>
-          <ion-button *ngIf="isNative" (click)="biometryAuth()" shape="round" fill="outline" size="small">
+          <ion-button *ngIf="hasBiometry" (click)="biometryAuth()" shape="round" fill="outline" size="small">
             <ion-icon name="finger-print"></ion-icon>
           </ion-button>
         </div>
@@ -51,9 +53,11 @@
       </form>
       }
       <div *ngIf="error">
-        <p style="color: red;">
-          {{error}}
-        </p>
+        <ion-text color="danger">{{error}}</ion-text>
+      </div>
+
+      <div *ngIf="message">
+        <ion-text color="primary">{{message}}</ion-text>
       </div>
 
     </div>

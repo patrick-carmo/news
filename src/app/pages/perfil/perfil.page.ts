@@ -21,6 +21,7 @@ import {
   IonCardContent,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/components/header/header.component';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-perfil',
@@ -51,5 +52,12 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
   ],
 })
 export class PerfilPage {
-  constructor() {}
+  user: any = {};
+  constructor(private auth: AuthService) {}
+
+  ionViewWillEnter() {
+    this.auth.getUser().subscribe((user) => {
+      this.user = user;
+    });
+  }
 }
