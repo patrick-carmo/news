@@ -48,6 +48,15 @@ h1{
   display: flex;
   justify-content: center;
   gap: 10px;
+
+  position: relative;
+
+  .floating{
+    position: absolute;
+    right: 5px;
+    top: 4px;
+    z-index: 2;
+  }
 }
 
 ion-text{

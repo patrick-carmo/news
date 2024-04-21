@@ -15,15 +15,6 @@
   </ion-item>
 
   <div id="message" *ngIf="message" class="ion-padding">
-    @if(success){
-    <ion-text color="success">
-      {{message}}
-    </ion-text>
-    }
-    @else{
-    <ion-text color="danger">
-      {{message}}
-    </ion-text>
-    }
+    <ion-text color="{{success ? 'primary' : 'danger'}}">{{message}}</ion-text>
   </div>
 </ion-content>

@@ -1,13 +1,16 @@
-.container{
+.container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-// .flex-center {
-//   display: flex;
-//   justify-content: center;
-// }
+#avatar{
+  margin-right: 15px;
+}
 
 .text-center {
   text-align: center;
+}
+
+ion-menu-toggle{
+  cursor: pointer;
 }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
 import {
   IonContent,
   IonHeader,
@@ -9,7 +9,6 @@ import {
   IonButton,
   LoadingController,
   IonInput,
-  IonInputPasswordToggle,
   IonLabel,
   IonSegment,
   IonSegmentButton,
@@ -20,11 +19,19 @@ import {
   IonCheckbox,
   IonToggle,
   IonItem,
+  IonCard,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, enterOutline, fingerPrint } from 'ionicons/icons';
+import {
+  addCircleOutline,
+  enterOutline,
+  eyeOffOutline,
+  eyeOutline,
+  fingerPrint,
+  logInOutline,
+} from 'ionicons/icons';
 import { ModalComponent } from 'src/app/components/modal/modal.component';
 import { StorageService } from 'src/app/services/storage.service';
 
@@ -34,9 +41,9 @@ import { StorageService } from 'src/app/services/storage.service';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
+    IonCard,
     IonItem,
     IonToggle,
-    IonInputPasswordToggle,
     IonCheckbox,
     IonText,
     ModalComponent,
@@ -65,9 +72,10 @@ export class LoginPage {
   email: string = '';
   password: string = '';
 
-  error: any;
+  showPassword: boolean = false;
 
-  message: string = '';
+  error: string | null = null;
+  message: string | null = null;
 
   private loading: any;
   private messageTimeout: any;
@@ -81,20 +89,27 @@ export class LoginPage {
     private modalCtrl: ModalController
   ) {
     addIcons({
-      'log-in-outline': enterOutline,
-      'add-circle-outline': addCircleOutline,
-      'finger-print': fingerPrint,
+      enterOutline,
+      addCircleOutline,
+      fingerPrint,
+      eyeOutline,
+      eyeOffOutline,
+      logInOutline,
     });
   }
 
   ionViewWillEnter() {
     this.menu.enable(false);
-    this.storage.getBiometricPreferences().then((data) => {
-      if (data) this.hasBiometry = data;
+    this.storage.getBiometricPreferences().then((biometry) => {
+      this.hasBiometry = biometry;
     });
   }
   ionViewWillLeave() {
     this.menu.enable(true);
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 
   async openModal() {
@@ -109,13 +124,15 @@ export class LoginPage {
 
   private showMessage(message: string, sucess: boolean = false) {
     const field = sucess ? 'message' : 'error';
+    this.message = null;
+    this.error = null;
     this[field] = message;
     if (this.messageTimeout) clearTimeout(this.messageTimeout);
     this.messageTimeout = setTimeout(
       () => {
         this[field] = null;
       },
-      sucess ? 5000 : 10000
+      sucess ? 10000 : 6000
     );
   }
 
@@ -137,30 +154,44 @@ export class LoginPage {
   }
 
   async emailAuth(email: string, password: string) {
-    await this.showLoading();
-    this.storage.setBiometricPreferences(this.hasBiometry);
-    const error = await this.auth.emailSignIn(email, password);
-    await this.dimisLoading();
+    try {
+      await this.showLoading();
+      const error = await this.auth.emailSignIn(email, password);
+      await this.dimisLoading();
 
-    if (error) return this.showMessage(error);
+      if (error) return this.showMessage(error);
 
-    this.router.navigate(['/']);
+      this.router.navigate(['/']);
+    } catch {
+      this.showMessage('Erro interno do servidor');
+    }
   }
 
   async emailRegister(email: string, password: string) {
-    await this.showLoading();
-    const error = await this.auth.createUser(email, password);
-    await this.dimisLoading();
+    try {
+      await this.showLoading();
+      const error = await this.auth.createUser(email, password);
+      await this.dimisLoading();
 
-    if (error) return this.showMessage(error);
+      if (error) return this.showMessage(error);
 
-    this;
+      return this.showMessage(
+        'Usuário criado com sucesso, verfique seu e-mail.',
+        true
+      );
+    } catch {
+      this.showMessage('Erro interno do servidor');
+    }
   }
 
   async googleAuth() {
-    const error = await this.auth.googleSignIn();
+    try {
+      const error = await this.auth.googleSignIn();
 
-    error ? this.showMessage(error) : this.router.navigate(['/']);
+      error ? this.showMessage(error) : this.router.navigate(['/']);
+    } catch {
+      this.showMessage('Erro interno do servidor');
+    }
   }
 
   private async showLoading() {

@@ -18,6 +18,7 @@ export class AuthService {
   constructor(
     private auth: AngularFireAuth,
     private router: Router,
+    private storage: StorageService
   ) {}
 
   async performBiometricVerification() {
@@ -28,7 +29,8 @@ export class AuthService {
 
       const credentials = await this.getBiometricCredentials();
 
-      if (!credentials) return 'Credenciais não encontradas';
+      if (!credentials)
+        return 'A primeira autenticação deve ser feita manualmente';
 
       const verified = await NativeBiometric.verifyIdentity({
         title: 'Autenticação',
@@ -78,6 +80,9 @@ export class AuthService {
 
       user.sendEmailVerification();
 
+      this.resetBiometricCredentials();
+      this.storage.setBiometricPreferences(false);
+
       return;
     } catch (error) {
       return firebaseError(error);
@@ -96,7 +101,18 @@ export class AuthService {
         return 'Verifique seu e-mail para autenticar.';
       }
 
-      if (this.isNative) this.setBiometricCredentials(email, password);
+      if (this.isNative) {
+        this.getBiometricCredentials().then((credentials) => {
+          if (
+            credentials.username !== email ||
+            credentials.password !== password
+          ) {
+            this.storage.setBiometricPreferences(false);
+            this.resetBiometricCredentials();
+            this.setBiometricCredentials(email, password);
+          }
+        });
+      }
 
       return;
     } catch (error) {
@@ -139,6 +155,12 @@ export class AuthService {
 
       if (user) await user.updatePassword(password);
 
+      if (this.isNative) {
+        this.getBiometricCredentials().then((credentials) => {
+          this.setBiometricCredentials(credentials.username, password);
+        });
+      }
+
       return;
     } catch (error) {
       return firebaseError(error);
@@ -149,6 +171,23 @@ export class AuthService {
     try {
       await this.auth.currentUser.then((user) => {
         user?.updateEmail(email);
+
+        if (this.isNative) {
+          this.getBiometricCredentials().then((credentials) => {
+            this.setBiometricCredentials(email, credentials.password);
+          });
+        }
+      });
+      return;
+    } catch (error) {
+      return firebaseError(error);
+    }
+  }
+
+  async updateProfile(displayName: string, photoURL: string) {
+    try {
+      await this.auth.currentUser.then((user) => {
+        user?.updateProfile({ displayName, photoURL });
       });
       return;
     } catch (error) {

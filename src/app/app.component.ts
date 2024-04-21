@@ -14,6 +14,8 @@ import {
   IonLabel,
   IonMenuToggle,
   IonRouterLink,
+  IonAvatar,
+  IonChip,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -27,8 +29,11 @@ import { AuthService } from './services/auth.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss'],
   standalone: true,
   imports: [
+    IonChip,
+    IonAvatar,
     IonItem,
     IonApp,
     IonRouterOutlet,
@@ -45,13 +50,24 @@ import { AuthService } from './services/auth.service';
     RouterLink,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  name: string | null = null;
+  email: string | null | undefined = null;
+  photo: string | null = null;
   constructor(public auth: AuthService) {
     addIcons({
       newspaperOutline,
       personCircleOutline,
       exitOutline,
-      codeWorkingOutline
+      codeWorkingOutline,
+    });
+  }
+
+  ngOnInit() {
+    this.auth.getUser().subscribe((user) => {
+      this.name = user?.displayName || null;
+      this.email = user?.email || null;
+      this.photo = user?.photoURL || null;
     });
   }
 }

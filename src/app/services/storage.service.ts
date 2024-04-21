@@ -17,22 +17,21 @@ export class StorageService {
     return this.firestore.collection(collection).doc(doc).set(data);
   }
 
-  getStorage(key: string) {
-    return Preferences.get({ key });
+  async getStorage(key: string) {
+    const { value } = await Preferences.get({ key });
+    return value;
   }
 
-  setStorage(key: string, value: any) {
-    Preferences.set({ key, value });
+  async setStorage(key: string, value: any) {
+    await Preferences.set({ key, value });
   }
 
-  setBiometricPreferences(value: boolean) {
-    this.setStorage('biometric', value);
+  async setBiometricPreferences(value: boolean) {
+    await this.setStorage('biometry', JSON.stringify(value));
   }
 
   async getBiometricPreferences() {
-    const data = (await this.getStorage('biometric')).value;
-    const result: boolean = data ? JSON.parse(data) : false;
-
-    return result;
+    const data = await this.getStorage('biometry');
+    return data ? JSON.parse(data) : false;
   }
 }
