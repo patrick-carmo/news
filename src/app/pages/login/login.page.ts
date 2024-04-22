@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgModel } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import {
   IonContent,
   IonHeader,
   IonTitle,
   IonToolbar,
   IonButton,
-  LoadingController,
   IonInput,
   IonLabel,
   IonSegment,
@@ -22,7 +21,6 @@ import {
   IonCard,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
-import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   addCircleOutline,
@@ -31,9 +29,11 @@ import {
   eyeOutline,
   fingerPrint,
   logInOutline,
+  logoGoogle,
 } from 'ionicons/icons';
 import { ModalComponent } from 'src/app/components/modal/modal.component';
 import { StorageService } from 'src/app/services/storage.service';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-login',
@@ -77,16 +77,14 @@ export class LoginPage {
   error: string | null = null;
   message: string | null = null;
 
-  private loading: any;
   private messageTimeout: any;
 
   constructor(
     private auth: AuthService,
-    public storage: StorageService,
-    private loadingControler: LoadingController,
-    private router: Router,
+    private storage: StorageService,
     private menu: MenuController,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private utils: UtilsService
   ) {
     addIcons({
       enterOutline,
@@ -95,6 +93,7 @@ export class LoginPage {
       eyeOutline,
       eyeOffOutline,
       logInOutline,
+      logoGoogle,
     });
   }
 
@@ -116,8 +115,8 @@ export class LoginPage {
     const modal = await this.modalCtrl.create({
       component: ModalComponent,
       cssClass: 'login-modal',
-      breakpoints: [0.1, 0.5, 0.9],
-      initialBreakpoint: 0.5,
+      breakpoints: [0, 0.4, 1],
+      initialBreakpoint: 0.4,
     });
     await modal.present();
   }
@@ -148,20 +147,21 @@ export class LoginPage {
       }
 
       await this.emailAuth(data.username, data.password);
-    } catch {
+    } catch (error) {
       this.showMessage('Erro interno do servidor');
     }
   }
 
   async emailAuth(email: string, password: string) {
     try {
-      await this.showLoading();
+      await this.utils.showLoading();
       const error = await this.auth.emailSignIn(email, password);
-      await this.dimisLoading();
+      await this.utils.dimisLoading();
+
 
       if (error) return this.showMessage(error);
 
-      this.router.navigate(['/']);
+      this.auth.router.navigate(['/']);
     } catch {
       this.showMessage('Erro interno do servidor');
     }
@@ -169,9 +169,9 @@ export class LoginPage {
 
   async emailRegister(email: string, password: string) {
     try {
-      await this.showLoading();
+      await this.utils.showLoading();
       const error = await this.auth.createUser(email, password);
-      await this.dimisLoading();
+      await this.utils.dimisLoading();
 
       if (error) return this.showMessage(error);
 
@@ -186,25 +186,13 @@ export class LoginPage {
 
   async googleAuth() {
     try {
+      await this.utils.showLoading('Autenticando...');
       const error = await this.auth.googleSignIn();
+      await this.utils.dimisLoading();
 
-      error ? this.showMessage(error) : this.router.navigate(['/']);
-    } catch {
-      this.showMessage('Erro interno do servidor');
-    }
-  }
-
-  private async showLoading() {
-    this.loading = await this.loadingControler.create({
-      message: 'Enviando...',
-    });
-
-    await this.loading.present();
-  }
-
-  private async dimisLoading() {
-    if (this.loading) {
-      await this.loading.dismiss();
+      error ? this.showMessage(error) : this.auth.router.navigate(['/']);
+    } catch (error: any) {
+      this.showMessage(error);
     }
   }
 }

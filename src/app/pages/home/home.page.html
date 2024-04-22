@@ -13,9 +13,9 @@
       </ion-item>
 
       @if(inSearch){
-      <app-news-items [news]="searchItems"></app-news-items>
+      <app-news-items [items]="searchItems"></app-news-items>
       }@else{
-      <app-news-items [news]="items"></app-news-items>
+      <app-news-items [items]="items"></app-news-items>
       }
     </ion-list>
 

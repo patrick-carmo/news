@@ -27,25 +27,15 @@ import {
   IonTitle,
   IonToolbar,
   IonInfiniteScroll,
-  ToastController,
   IonRefresher,
   IonRefresherContent,
   IonInput,
 } from '@ionic/angular/standalone';
 import { NewsService } from 'src/app/services/news.service';
-import { Share } from '@capacitor/share';
-import { Clipboard } from '@capacitor/clipboard';
-import { Browser } from '@capacitor/browser';
-import { addIcons } from 'ionicons';
-import {
-  chevronDownCircleOutline,
-  document,
-  globe,
-  shareSocialSharp,
-} from 'ionicons/icons';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-home',
@@ -98,20 +88,14 @@ export class HomePage implements OnInit {
   searchItems: any = [];
   private searchPage: number = 1;
 
-  constructor(private news: NewsService, private toast: ToastController) {
-    addIcons({
-      shareSocialSharp,
-      document,
-      globe,
-      chevronDownCircleOutline,
-    });
-  }
+  constructor(private news: NewsService, private utils: UtilsService) {}
 
   private formatItems(data: any) {
     return data.items.map((item: any) => {
       const images = JSON.parse(item.imagens);
       const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
       return {
+        id: item.id,
         title: item.titulo,
         intro: item.introducao,
         date: item.data_publicacao ? item.data_publicacao.substring(0, 10) : '',
@@ -137,7 +121,7 @@ export class HomePage implements OnInit {
         }
       },
       async () => {
-        await this.toastMessage('Erro', 'Erro ao carregar notícias');
+        await this.utils.toastMessage('Erro', 'Erro ao carregar notícias');
       }
     );
   }
@@ -167,9 +151,9 @@ export class HomePage implements OnInit {
           return;
         }
 
-        this.toastMessage('Info', 'Nenhuma notícia encontrada');
+        this.utils.toastMessage('Info', 'Nenhuma notícia encontrada');
       },
-      async () => await this.toastMessage('Erro', 'Erro ao buscar notícias')
+      async () => await this.utils.toastMessage('Erro', 'Erro ao buscar notícias')
     );
   }
 
@@ -180,7 +164,6 @@ export class HomePage implements OnInit {
   onIonInfinite(ev: any, search: boolean = false) {
     if (search) {
       this.search('push');
-      console.log(this.searchPage);
     } else {
       this.generateItems(this.page);
     }
@@ -204,37 +187,5 @@ export class HomePage implements OnInit {
       }
       event.target.complete();
     }, 1000);
-  }
-
-  async copyLink(link: string) {
-    try {
-      await Clipboard.write({
-        string: link,
-      });
-    } catch (error: any) {
-      this.toastMessage('Erro', error.message);
-    }
-  }
-
-  async shareNews(url: string) {
-    try {
-      await Share.share({
-        url,
-      });
-    } catch {}
-  }
-
-  async openNews(url: string) {
-    await Browser.open({ url });
-  }
-
-  async toastMessage(header: string, message: string) {
-    const toastMessage = await this.toast.create({
-      header,
-      message,
-      duration: 3500,
-    });
-
-    await toastMessage.present();
   }
 }

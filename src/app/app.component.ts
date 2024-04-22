@@ -16,9 +16,13 @@ import {
   IonRouterLink,
   IonAvatar,
   IonChip,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  bookmarkOutline,
   codeWorkingOutline,
   exitOutline,
   newspaperOutline,
@@ -32,6 +36,9 @@ import { AuthService } from './services/auth.service';
   styleUrls: ['app.component.scss'],
   standalone: true,
   imports: [
+    IonCol,
+    IonRow,
+    IonGrid,
     IonChip,
     IonAvatar,
     IonItem,
@@ -60,11 +67,12 @@ export class AppComponent implements OnInit {
       personCircleOutline,
       exitOutline,
       codeWorkingOutline,
+      bookmarkOutline,
     });
   }
 
   ngOnInit() {
-    this.auth.getUser().subscribe((user) => {
+    this.auth.getUser().then((user: any) => {
       this.name = user?.displayName || null;
       this.email = user?.email || null;
       this.photo = user?.photoURL || null;

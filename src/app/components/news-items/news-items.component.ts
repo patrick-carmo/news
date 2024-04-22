@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   IonItem,
   IonCard,
@@ -17,7 +17,15 @@ import {
   IonIcon,
   IonFabList,
 } from '@ionic/angular/standalone';
-import { HomePage } from 'src/app/pages/home/home.page';
+import { addIcons } from 'ionicons';
+import {
+  bookmarkOutline,
+  chevronDownCircleOutline,
+  document,
+  globe,
+  shareSocialSharp,
+} from 'ionicons/icons';
+import { NewsService } from 'src/app/services/news.service';
 
 @Component({
   selector: 'app-news-items',
@@ -44,7 +52,14 @@ import { HomePage } from 'src/app/pages/home/home.page';
   ],
 })
 export class NewsItemsComponent {
-  @Input() news: any;
-  constructor(public home: HomePage) {
+  @Input() items: any;
+  constructor(public news: NewsService) {
+    addIcons({
+      shareSocialSharp,
+      document,
+      globe,
+      chevronDownCircleOutline,
+      bookmarkOutline,
+    });
   }
 }

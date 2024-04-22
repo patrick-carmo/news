@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -81,10 +81,8 @@ export class ProfilePage {
     });
   }
 
-  ionViewWillEnter() {
-    this.auth.getUser().subscribe((user) => {
-      this.user = user;
-    });
+  async ionViewWillEnter() {
+    this.user = await this.auth.getUser();
 
     this.storage.getBiometricPreferences().then((hasBiometry: boolean) => {
       this.hasBiometry = hasBiometry;
@@ -93,15 +91,13 @@ export class ProfilePage {
 
   biometry(event: any) {
     this.hasBiometry = event.detail.checked;
-    this.storage
-      .setBiometricPreferences(this.hasBiometry)
-      .catch(() => {
-        this.toast
-          .create({
-            message: `Erro ao salvar preferência de biometria.`,
-            duration: 2000,
-          })
-          .then((toast) => toast.present());
-      });
+    this.storage.setBiometricPreferences(this.hasBiometry).catch(() => {
+      this.toast
+        .create({
+          message: `Erro ao salvar preferência de biometria.`,
+          duration: 2000,
+        })
+        .then((toast) => toast.present());
+    });
   }
 }

@@ -1,25 +1,31 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import firebase from 'firebase/compat/app';
 import { Router } from '@angular/router';
 import { firebaseError } from '../utils/errorFirebase';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import firebase from 'firebase/compat/app';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private server: string = 'https://news-team-5.vercel.app/';
-
   isNative: boolean = Capacitor.getPlatform() !== 'web' ? true : false;
 
   constructor(
     private auth: AngularFireAuth,
-    private router: Router,
+    public router: Router,
     private storage: StorageService
-  ) {}
+  ) {
+    GoogleAuth.initialize({
+      clientId:
+        '123060927074-5mks66l4aq435n1cv3g3mmnjfrass3u7.apps.googleusercontent.com',
+      scopes: ['profile', 'email'],
+      grantOfflineAccess: true,
+    });
+  }
 
   async performBiometricVerification() {
     try {
@@ -27,7 +33,7 @@ export class AuthService {
 
       if (!result.isAvailable) return 'Biometria não disponível';
 
-      const credentials = await this.getBiometricCredentials();
+      const credentials = await this.storage.getBiometricCredentials();
 
       if (!credentials)
         return 'A primeira autenticação deve ser feita manualmente';
@@ -42,31 +48,9 @@ export class AuthService {
       if (!verified) return;
 
       return credentials;
-    } catch (error: any) {
-      return error.message;
+    } catch {
+      return 'Erro interno do servidor';
     }
-  }
-
-  async setBiometricCredentials(email: string, password: string) {
-    await NativeBiometric.setCredentials({
-      server: this.server,
-      username: email,
-      password,
-    });
-  }
-
-  async getBiometricCredentials() {
-    const credentials = await NativeBiometric.getCredentials({
-      server: this.server,
-    });
-
-    return credentials;
-  }
-
-  async resetBiometricCredentials() {
-    await NativeBiometric.deleteCredentials({
-      server: this.server,
-    });
   }
 
   async createUser(email: string, password: string) {
@@ -76,12 +60,14 @@ export class AuthService {
         password
       );
 
-      if (!user) return 'Erro ao criar conta';
+      if (!user) return 'Erro interno do servidor';
 
       user.sendEmailVerification();
 
-      this.resetBiometricCredentials();
-      this.storage.setBiometricPreferences(false);
+      if (this.isNative) {
+        this.storage.resetBiometricCredentials();
+        this.storage.setBiometricPreferences(false);
+      }
 
       return;
     } catch (error) {
@@ -102,14 +88,14 @@ export class AuthService {
       }
 
       if (this.isNative) {
-        this.getBiometricCredentials().then((credentials) => {
+        this.storage.getBiometricCredentials().then((credentials) => {
           if (
             credentials.username !== email ||
             credentials.password !== password
           ) {
             this.storage.setBiometricPreferences(false);
-            this.resetBiometricCredentials();
-            this.setBiometricCredentials(email, password);
+            this.storage.resetBiometricCredentials();
+            this.storage.setBiometricCredentials({ email, password });
           }
         });
       }
@@ -122,12 +108,27 @@ export class AuthService {
 
   async googleSignIn() {
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
+      const signData = await GoogleAuth.signIn();
+      const { idToken } = signData.authentication;
 
-      await this.auth.signInWithPopup(provider);
+      const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+
+      await this.auth.signInWithCredential(credential);
 
       return;
-    } catch (error) {
+    } catch (error: any) {
+      const message = 'Autenticação com foi Google cancelada';
+
+      if (error.error) {
+        if (
+          error.error === 'popup_closed_by_user' ||
+          error.error === 'access_denied'
+        )
+          return message;
+      }
+
+      if (error.code === '12501') return message;
+
       return firebaseError(error);
     }
   }
@@ -141,7 +142,8 @@ export class AuthService {
     try {
       await this.auth.sendPasswordResetEmail(email);
 
-      if (this.isNative) this.resetBiometricCredentials();
+      if (this.isNative) this.storage.resetBiometricCredentials();
+      this.storage.setBiometricPreferences(false);
 
       return;
     } catch (error) {
@@ -156,8 +158,11 @@ export class AuthService {
       if (user) await user.updatePassword(password);
 
       if (this.isNative) {
-        this.getBiometricCredentials().then((credentials) => {
-          this.setBiometricCredentials(credentials.username, password);
+        this.storage.getBiometricCredentials().then((credentials) => {
+          this.storage.setBiometricCredentials({
+            email: credentials.username,
+            password,
+          });
         });
       }
 
@@ -173,8 +178,11 @@ export class AuthService {
         user?.updateEmail(email);
 
         if (this.isNative) {
-          this.getBiometricCredentials().then((credentials) => {
-            this.setBiometricCredentials(email, credentials.password);
+          this.storage.getBiometricCredentials().then((credentials) => {
+            this.storage.setBiometricCredentials({
+              email,
+              password: credentials.password,
+            });
           });
         }
       });
@@ -223,6 +231,10 @@ export class AuthService {
   }
 
   getUser() {
-    return this.auth.user;
+    return new Promise((resolve) => {
+      return this.auth.user.subscribe((user) => {
+        return resolve(user);
+      });
+    });
   }
 }

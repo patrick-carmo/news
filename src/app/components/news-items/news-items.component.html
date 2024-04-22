@@ -1,4 +1,4 @@
-<ion-item *ngFor="let item of news" class="text-center">
+<ion-item *ngFor="let item of items; index" class="text-center">
   <ion-card>
     <ion-img [src]="item.image" [alt]="item.title"></ion-img>
     <ion-card-header>
@@ -11,7 +11,7 @@
     <ion-grid>
       <ion-row class="ion-justify-content-center">
         <ion-col>
-          <ion-button (click)="home.openNews(item.link)">Ler mais</ion-button>
+          <ion-button (click)="news.openNews(item.link)" shape="round">Leia mais</ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>
@@ -21,11 +21,14 @@
       <ion-icon name="share-social-sharp"></ion-icon>
     </ion-fab-button>
     <ion-fab-list side="top">
-      <ion-fab-button (click)="home.copyLink(item.link)">
+      <ion-fab-button (click)="news.copyLink(item.link)">
         <ion-icon name="document"></ion-icon>
       </ion-fab-button>
-      <ion-fab-button (click)="home.shareNews(item.link)">
+      <ion-fab-button (click)="news.shareNews(item.link)">
         <ion-icon name="globe"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button>
+        <ion-icon name="bookmark-outline" (click)="news.saveNews(item)"></ion-icon>
       </ion-fab-button>
     </ion-fab-list>
   </ion-fab>

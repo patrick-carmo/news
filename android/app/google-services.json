@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "123060927074",
+    "project_id": "news-28ffb",
+    "storage_bucket": "news-28ffb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123060927074:android:94e0650ec500e18b84ef3b",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDPPP0XaPvLc0H0ztvV59pgXE3PIZJElM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "123060927074-5mks66l4aq435n1cv3g3mmnjfrass3u7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

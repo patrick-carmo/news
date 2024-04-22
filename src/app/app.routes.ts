@@ -9,7 +9,7 @@ export const routes: Routes = [
       import('./pages/home/home.page').then((m) => m.HomePage),
   },
   {
-    path: 'perfil',
+    path: 'profile',
     canActivate: [AuthGuardService],
     loadComponent: () =>
       import('./pages/profile/profile.page').then((m) => m.ProfilePage),
@@ -24,4 +24,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/devs/devs.page').then((m) => m.DevsPage),
   },
+  {
+    path: 'bookmarks',
+    loadComponent: () => import('./pages/bookmarks/bookmarks.page').then( m => m.BookmarksPage)
+  },
+
 ];

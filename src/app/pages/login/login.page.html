@@ -40,6 +40,12 @@
           <ion-button (click)="loginForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
 
+        <div>
+          <ion-button (click)="googleAuth()" fill="clear" shape="round">
+            <ion-icon name="logo-google"></ion-icon>
+          </ion-button>
+        </div>
+
         <div *ngIf="type === 'login' && isNative && hasBiometry">
           <ion-button (click)="biometryAuth()" shape="round" fill="outline" size="small">
             <ion-icon name="finger-print"></ion-icon>

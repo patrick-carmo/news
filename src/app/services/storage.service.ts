@@ -1,37 +1,68 @@
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
+import { NativeBiometric } from 'capacitor-native-biometric';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   hasBiometric: boolean = false;
+  private server = import.meta.env['NG_APP_SERVER'];
+
   constructor(private firestore: AngularFirestore) {}
 
-  getDoc(collection: string, doc: string) {
-    return this.firestore.collection(collection).doc(doc).get();
+  getDocs(collection: string) {
+    return this.firestore.collection(collection).get().toPromise();
   }
 
-  setDoc(collection: string, doc: string, data: any) {
-    return this.firestore.collection(collection).doc(doc).set(data);
+  getDoc(collection: string, doc: string | number) {
+    return this.firestore.collection(collection).doc(doc.toString()).get().toPromise();
+  }
+
+  setDoc(collection: string, doc: string | number, data: any) {
+    return this.firestore.collection(collection).doc(doc.toString()).set(data);
+  }
+
+  delDoc(collection: string, doc: string | number) {
+    return this.firestore.collection(collection).doc(doc.toString()).delete();
   }
 
   async getStorage(key: string) {
     const { value } = await Preferences.get({ key });
-    return value;
+    return value ? JSON.parse(value) : null;
   }
 
   async setStorage(key: string, value: any) {
-    await Preferences.set({ key, value });
+    await Preferences.set({ key, value: JSON.stringify(value) });
   }
 
   async setBiometricPreferences(value: boolean) {
-    await this.setStorage('biometry', JSON.stringify(value));
+    await this.setStorage('biometry', value);
+  }
+
+  async setBiometricCredentials(credentials: any) {
+    const { username, password } = credentials;
+    NativeBiometric.setCredentials({
+      username,
+      password,
+      server: this.server,
+    });
+  }
+
+  async getBiometricCredentials() {
+    return await NativeBiometric.getCredentials({
+      server: this.server,
+    });
+  }
+
+  async resetBiometricCredentials() {
+    await NativeBiometric.deleteCredentials({
+      server: this.server,
+    });
   }
 
   async getBiometricPreferences() {
-    const data = await this.getStorage('biometry');
-    return data ? JSON.parse(data) : false;
+    return await this.getStorage('biometry');
   }
 }
