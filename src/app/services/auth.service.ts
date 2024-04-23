@@ -17,7 +17,7 @@ export class AuthService {
   constructor(
     private auth: AngularFireAuth,
     public router: Router,
-    private storage: StorageService
+    private storage: StorageService,
   ) {
     GoogleAuth.initialize({
       clientId:
@@ -26,7 +26,7 @@ export class AuthService {
       grantOfflineAccess: true,
     });
   }
-
+  
   async performBiometricVerification() {
     try {
       const result = await NativeBiometric.isAvailable();
@@ -235,6 +235,6 @@ export class AuthService {
       return this.auth.user.subscribe((user) => {
         return resolve(user);
       });
-    });
+    }) as any;
   }
 }

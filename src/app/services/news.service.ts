@@ -30,20 +30,20 @@ export class NewsService {
     );
   }
 
-  async toggleNewsStorage(news: any) {
-    const user: any = await this.auth.getUser();
-
+  async toggleBookmarksStorage(news: any) {
+    const user = await this.auth.getUser();
     const doc = await this.storage.getDoc(`${user?.email}-bookmarks`, news.id);
 
     if (!doc) throw new Error('Erro ao buscar notícia');
-
+    
     if (doc.exists) {
       await this.storage.delDoc(`${user?.email}-bookmarks`, news.id);
-      return 'Notícia removida dos favoritos';
+      return false;
     }
 
+    news.saved = true;
     await this.storage.setDoc(`${user?.email}-bookmarks`, news.id, news);
-    return 'Notícia adicionada aos favoritos';
+    return true;
   }
 
   async copyLink(link: string) {
@@ -52,7 +52,7 @@ export class NewsService {
         string: link,
       });
     } catch (error: any) {
-      this.utils.toastMessage('Erro', error.message);
+      this.utils.toastMessage({ message: error.message, color: 'danger' });
     }
   }
 
@@ -66,14 +66,5 @@ export class NewsService {
 
   async openNews(url: string) {
     await Browser.open({ url });
-  }
-
-  async saveNews(news: any) {
-    try {
-      const message = await this.toggleNewsStorage(news);
-      await this.utils.toastMessage('Info', message);
-    } catch {
-      await this.utils.toastMessage('Erro', 'Erro ao salvar notícia');
-    }
   }
 }

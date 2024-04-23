@@ -12,11 +12,7 @@
         <ion-searchbar animated="true" [debounce]="1000" placeholder="Pesquisar" [(ngModel)]="query" (ionInput)="search()"></ion-searchbar>
       </ion-item>
 
-      @if(inSearch){
-      <app-news-items [items]="searchItems"></app-news-items>
-      }@else{
-      <app-news-items [items]="items"></app-news-items>
-      }
+      <app-news-items [items]="inSearch ? searchItems : items"></app-news-items>
     </ion-list>
 
     <ion-infinite-scroll (ionInfinite)="onIonInfinite($event, inSearch)">

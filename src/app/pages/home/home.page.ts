@@ -36,6 +36,8 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { UtilsService } from 'src/app/services/utils.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -79,16 +81,35 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class HomePage implements OnInit {
+  user: any;
+  savedNews: any = [];
   items: any = [];
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
   inSearch: boolean = false;
+
   query: string = '';
   searchItems: any = [];
   private searchPage: number = 1;
 
-  constructor(private news: NewsService, private utils: UtilsService) {}
+  constructor(
+    private news: NewsService,
+    private utils: UtilsService,
+    private auth: AuthService,
+    private storage: StorageService
+  ) {}
+
+  async ngOnInit() {
+    this.user = await this.auth.getUser();
+    const bookmarks = await this.storage.getDocs(
+      `${this.user?.email}-bookmarks`
+    );
+    bookmarks?.docs.forEach((doc: any) => {
+      this.savedNews.push(doc.data());
+    });
+    this.generateItems();
+  }
 
   private formatItems(data: any) {
     return data.items.map((item: any) => {
@@ -101,6 +122,7 @@ export class HomePage implements OnInit {
         date: item.data_publicacao ? item.data_publicacao.substring(0, 10) : '',
         image: imageLink,
         link: item.link,
+        saved: this.savedNews?.some((doc: any) => doc.id === item.id) ?? false,
       };
     });
   }
@@ -120,8 +142,11 @@ export class HomePage implements OnInit {
           this.page++;
         }
       },
-      async () => {
-        await this.utils.toastMessage('Erro', 'Erro ao carregar notícias');
+      () => {
+        this.utils.toastMessage({
+          message: 'Erro ao carregar notícias',
+          color: 'danger',
+        });
       }
     );
   }
@@ -151,14 +176,17 @@ export class HomePage implements OnInit {
           return;
         }
 
-        this.utils.toastMessage('Info', 'Nenhuma notícia encontrada');
+        this.utils.toastMessage({
+          message: 'Nenhuma notícia encontrada',
+          color: 'warning',
+        });
       },
-      async () => await this.utils.toastMessage('Erro', 'Erro ao buscar notícias')
+      () =>
+        this.utils.toastMessage({
+          message: 'Erro ao buscar notícias',
+          color: 'danger',
+        })
     );
-  }
-
-  ngOnInit() {
-    this.generateItems();
   }
 
   onIonInfinite(ev: any, search: boolean = false) {

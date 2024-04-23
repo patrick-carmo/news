@@ -6,6 +6,9 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
+  IonList,
+  IonItem,
+  IonSearchbar,
 } from '@ionic/angular/standalone';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { HeaderComponent } from 'src/app/components/header/header.component';
@@ -18,6 +21,8 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./bookmarks.page.scss'],
   standalone: true,
   imports: [
+    IonItem,
+    IonList,
     HeaderComponent,
     NewsItemsComponent,
     IonContent,
@@ -26,26 +31,44 @@ import { AuthService } from 'src/app/services/auth.service';
     IonToolbar,
     CommonModule,
     FormsModule,
+    IonSearchbar,
   ],
 })
 export class BookmarksPage {
-  news: any = [];
+  items: any = [];
+  user: any;
+  searchItems: any;
+  inSearch: boolean = false;
+  query: string = '';
+
   constructor(private storage: StorageService, private auth: AuthService) {}
 
   async ionViewWillEnter() {
-    const user: any = await this.auth.getUser();
-    this.news = [];
-    const items = await this.storage.getDocs(`${user?.email}-bookmarks`);
-    items?.docs.forEach((doc: any) => {
-      this.news.push(doc.data());
+    if (!this.user) {
+      this.user = await this.auth.getUser();
+    }
+    this.items = [];
+    const news = await this.storage.getDocs(`${this.user?.email}-bookmarks`);
+    news?.docs.forEach((doc: any) => {
+      this.items.push(doc.data());
     });
   }
 
-  
-  removeBookmark(item: any) {
-    const index = this.news.indexOf(item);
-    if (index !== -1) {
-      this.news.splice(index, 1);
+  searchNews() {
+    const query = this.query.toLowerCase().trim();
+    if (!query) {
+
+      this.inSearch = false;
+      this.searchItems = [];
+      return;
     }
+
+    this.inSearch = true;
+
+    const result = this.items.filter((item: any) => {
+      return item.title.toLowerCase().includes(this.query.toLowerCase());
+    });
+
+    this.searchItems = result;
   }
 }

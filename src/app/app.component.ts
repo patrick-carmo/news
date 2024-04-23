@@ -58,9 +58,9 @@ import { AuthService } from './services/auth.service';
   ],
 })
 export class AppComponent implements OnInit {
-  name: string | null = null;
-  email: string | null | undefined = null;
-  photo: string | null = null;
+  name: string = '';
+  email: string = '';
+  photo: string = '';
   constructor(public auth: AuthService) {
     addIcons({
       newspaperOutline,

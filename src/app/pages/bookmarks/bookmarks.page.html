@@ -1,8 +1,13 @@
-<app-header [title]="'bookmarks'"></app-header>
+<app-header [title]="'Notícias Salvas'"></app-header>
 
 
 <ion-content [fullscreen]="true">
   <div class="container">
-    <app-news-items [items]="news"></app-news-items>
+    <ion-list>
+      <ion-item>
+        <ion-searchbar animated="true" [debounce]="1000" placeholder="Pesquisar" [(ngModel)]="query" (ionInput)="searchNews()"></ion-searchbar>
+      </ion-item>
+      <app-news-items [items]="inSearch ? searchItems : items " [isBookmarksPage]="true"></app-news-items>
+    </ion-list>
   </div>
 </ion-content>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, ToastController } from '@ionic/angular/standalone';
+import { LoadingController, ToastController, ToastOptions } from '@ionic/angular/standalone';
 
 @Injectable({
   providedIn: 'root',
@@ -9,14 +9,19 @@ export class UtilsService {
 
   constructor(
     private toast: ToastController,
-    private loadingControler: LoadingController
+    private loadingControler: LoadingController,
   ) {}
 
-  async toastMessage(header: string, message: string) {
+  async toastMessage(fields: ToastOptions) {
+    const { header, message, color, buttons } = fields;
+
     const toastMessage = await this.toast.create({
       header,
       message,
-      duration: 3500,
+      color,
+      buttons,
+      swipeGesture: 'vertical',
+      duration: 4000,
     });
 
     await toastMessage.present();
