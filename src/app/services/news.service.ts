@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root',
 })
 export class NewsService {
+  user: any;
   constructor(
     private http: HttpClient,
     private storage: StorageService,
@@ -31,19 +32,31 @@ export class NewsService {
   }
 
   async toggleBookmarksStorage(news: any) {
-    const user = await this.auth.getUser();
-    const doc = await this.storage.getDoc(`${user?.email}-bookmarks`, news.id);
+    this.user = this.auth.getUser;
 
-    if (!doc) throw new Error('Erro ao buscar notícia');
-    
-    if (doc.exists) {
-      await this.storage.delDoc(`${user?.email}-bookmarks`, news.id);
-      return false;
+    if (this.user) {
+      const doc = await this.storage.getDoc(
+        `${this.user?.email}-bookmarks`,
+        news.id
+      );
+
+      if (!doc) throw new Error('Erro ao buscar notícia');
+
+      if (doc.exists) {
+        await this.storage.delDoc(`${this.user?.email}-bookmarks`, news.id);
+        return false;
+      }
+
+      news.saved = true;
+      await this.storage.setDoc(`${this.user?.email}-bookmarks`, news.id, news);
+      return true;
+    } else {
+      this.utils.toastMessage({
+        message: 'Faça login para salvar notícias',
+        color: 'warning',
+      });
+      throw new Error('Usuário não autenticado');
     }
-
-    news.saved = true;
-    await this.storage.setDoc(`${user?.email}-bookmarks`, news.id, news);
-    return true;
   }
 
   async copyLink(link: string) {

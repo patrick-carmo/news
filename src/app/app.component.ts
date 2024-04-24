@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   IonApp,
@@ -29,6 +29,7 @@ import {
   personCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from './services/auth.service';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -57,10 +58,12 @@ import { AuthService } from './services/auth.service';
     RouterLink,
   ],
 })
-export class AppComponent implements OnInit {
-  name: string = '';
-  email: string = '';
-  photo: string = '';
+export class AppComponent implements OnDestroy {
+  name: string | null | undefined;
+  email: string | null | undefined;
+  photo: string | null | undefined;
+  authFirebase$ = this.auth.authState;
+  user$: Subscription;
   constructor(public auth: AuthService) {
     addIcons({
       newspaperOutline,
@@ -69,13 +72,17 @@ export class AppComponent implements OnInit {
       codeWorkingOutline,
       bookmarkOutline,
     });
+
+    this.auth.authState.then((user) => {
+      if (user) {
+        this.name = user.displayName;
+        this.email = user.email;
+        this.photo = user.photoURL;
+      }
+    });
   }
 
-  ngOnInit() {
-    this.auth.getUser().then((user: any) => {
-      this.name = user?.displayName || null;
-      this.email = user?.email || null;
-      this.photo = user?.photoURL || null;
-    });
+  ngOnDestroy(): void {
+    this.user$.unsubscribe();
   }
 }

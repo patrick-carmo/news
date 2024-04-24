@@ -158,7 +158,6 @@ export class LoginPage {
       const error = await this.auth.emailSignIn(email, password);
       await this.utils.dimisLoading();
 
-
       if (error) return this.showMessage(error);
 
       this.auth.router.navigate(['/']);

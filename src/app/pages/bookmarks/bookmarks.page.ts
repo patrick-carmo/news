@@ -43,21 +43,23 @@ export class BookmarksPage {
 
   constructor(private storage: StorageService, private auth: AuthService) {}
 
-  async ionViewWillEnter() {
-    if (!this.user) {
-      this.user = await this.auth.getUser();
+  ionViewWillEnter() {
+    this.user = this.auth.getUser;
+
+    if (this.user) {
+      this.items = [];
+
+      this.storage.getDocs(`${this.user?.email}-bookmarks`).then((news) => {
+        news?.docs.forEach((doc: any) => {
+          this.items.push(doc.data());
+        });
+      });
     }
-    this.items = [];
-    const news = await this.storage.getDocs(`${this.user?.email}-bookmarks`);
-    news?.docs.forEach((doc: any) => {
-      this.items.push(doc.data());
-    });
   }
 
   searchNews() {
     const query = this.query.toLowerCase().trim();
     if (!query) {
-
       this.inSearch = false;
       this.searchItems = [];
       return;

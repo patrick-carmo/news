@@ -7,7 +7,6 @@ import { NativeBiometric } from 'capacitor-native-biometric';
   providedIn: 'root',
 })
 export class StorageService {
-  hasBiometric: boolean = false;
   private server = import.meta.env['NG_APP_SERVER'];
 
   constructor(private firestore: AngularFirestore) {}
@@ -17,7 +16,11 @@ export class StorageService {
   }
 
   getDoc(collection: string, doc: string | number) {
-    return this.firestore.collection(collection).doc(doc.toString()).get().toPromise();
+    return this.firestore
+      .collection(collection)
+      .doc(doc.toString())
+      .get()
+      .toPromise();
   }
 
   setDoc(collection: string, doc: string | number, data: any) {

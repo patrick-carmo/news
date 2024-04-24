@@ -21,11 +21,13 @@ export const routes: Routes = [
   },
   {
     path: 'devs',
+    canActivate: [AuthGuardService],
     loadComponent: () =>
       import('./pages/devs/devs.page').then((m) => m.DevsPage),
   },
   {
     path: 'bookmarks',
+    canActivate: [AuthGuardService],
     loadComponent: () => import('./pages/bookmarks/bookmarks.page').then( m => m.BookmarksPage)
   },
 

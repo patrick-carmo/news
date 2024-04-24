@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { firebaseError } from '../utils/errorFirebase';
@@ -7,17 +7,20 @@ import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import firebase from 'firebase/compat/app';
+import { Subscription, take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   isNative: boolean = Capacitor.getPlatform() !== 'web' ? true : false;
+  private user: firebase.User | null = null;
+  userState$: Subscription;
 
   constructor(
     private auth: AngularFireAuth,
     public router: Router,
-    private storage: StorageService,
+    private storage: StorageService
   ) {
     GoogleAuth.initialize({
       clientId:
@@ -25,8 +28,24 @@ export class AuthService {
       scopes: ['profile', 'email'],
       grantOfflineAccess: true,
     });
+
+    this.userState$ = this.auth.authState.subscribe((user) => {
+      this.user = user;
+    });
   }
-  
+
+  ngOnDestroy(): void {
+    this.userState$.unsubscribe();
+  }
+
+  get authState() {
+    return this.auth.authState.pipe(take(1)).toPromise();
+  }
+
+  get getUser() {
+    return this.user;
+  }
+
   async performBiometricVerification() {
     try {
       const result = await NativeBiometric.isAvailable();
@@ -203,24 +222,6 @@ export class AuthService {
     }
   }
 
-  async isLogged() {
-    return new Promise((resolve, reject) => {
-      return this.auth.authState.subscribe(
-        (user) => {
-          if (user) {
-            this.refreshToken(user);
-            resolve(true);
-          } else {
-            reject(false);
-          }
-        },
-        () => {
-          reject(false);
-        }
-      );
-    });
-  }
-
   async refreshToken(user: any) {
     try {
       await user?.getIdTokenResult(true);
@@ -228,13 +229,5 @@ export class AuthService {
     } catch (error) {
       return null;
     }
-  }
-
-  getUser() {
-    return new Promise((resolve) => {
-      return this.auth.user.subscribe((user) => {
-        return resolve(user);
-      });
-    }) as any;
   }
 }

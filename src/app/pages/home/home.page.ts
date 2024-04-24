@@ -93,6 +93,8 @@ export class HomePage implements OnInit {
   searchItems: any = [];
   private searchPage: number = 1;
 
+  bookmarks: any;
+
   constructor(
     private news: NewsService,
     private utils: UtilsService,
@@ -101,14 +103,19 @@ export class HomePage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.user = await this.auth.getUser();
-    const bookmarks = await this.storage.getDocs(
-      `${this.user?.email}-bookmarks`
-    );
-    bookmarks?.docs.forEach((doc: any) => {
-      this.savedNews.push(doc.data());
-    });
-    this.generateItems();
+    this.user = this.auth.getUser;
+
+    if (this.user) {
+      const bookmarks = await this.storage.getDocs(
+        `${this.user?.email}-bookmarks`
+      );
+
+      bookmarks?.docs.forEach((doc: any) => {
+        this.savedNews.push(doc.data());
+      });
+
+      this.generateItems();
+    }
   }
 
   private formatItems(data: any) {

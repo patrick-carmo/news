@@ -81,8 +81,8 @@ export class ProfilePage {
     });
   }
 
-  async ionViewWillEnter() {
-    this.user = await this.auth.getUser();
+  ionViewWillEnter() {
+    this.user = this.auth.getUser;
 
     this.storage.getBiometricPreferences().then((hasBiometry: boolean) => {
       this.hasBiometry = hasBiometry;
