@@ -1,23 +1,41 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { StorageService } from './storage.service';
 import { UtilsService } from './utils.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { AuthService } from './auth.service';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class NewsService {
-  user: any;
+export class NewsService implements OnDestroy {
+  private user: any;
+  private bookmarks$: Subscription;
+  private bookmarks: any;
+
   constructor(
     private http: HttpClient,
     private storage: StorageService,
     private utils: UtilsService,
     private auth: AuthService
-  ) {}
+  ) {
+    this.user = this.auth.getUser;
+
+    if (this.user) {
+      this.bookmarks$ = this.storage
+        .getObsDocs(`${this.user.email}-bookmarks`)
+        .subscribe((news: any) => {
+          this.bookmarks = news;
+        });
+    }
+  }
+
+  ngOnDestroy() {
+    this.bookmarks$.unsubscribe();
+  }
 
   getNews(qtd: number = 10, page: number = 1) {
     return this.http.get(
@@ -31,9 +49,11 @@ export class NewsService {
     );
   }
 
-  async toggleBookmarksStorage(news: any) {
-    this.user = this.auth.getUser;
+  getBookmarks() {
+    return this.bookmarks;
+  }
 
+  async toggleBookmarksStorage(news: any) {
     if (this.user) {
       const doc = await this.storage.getDoc(
         `${this.user?.email}-bookmarks`,

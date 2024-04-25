@@ -25,6 +25,7 @@ import {
   IonToggle,
   IonInput,
   IonButton,
+  IonicSafeString,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { AuthService } from 'src/app/services/auth.service';
@@ -32,6 +33,7 @@ import { addIcons } from 'ionicons';
 import { fingerPrintOutline } from 'ionicons/icons';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastController } from '@ionic/angular';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-profile',
@@ -71,33 +73,37 @@ export class ProfilePage {
   user: any = {};
   hasBiometry: boolean = false;
   isNative: boolean = this.auth.isNative;
+  loginWithEmail: boolean;
   constructor(
     private auth: AuthService,
     private storage: StorageService,
-    private toast: ToastController
+    private utils: UtilsService
   ) {
     addIcons({
       fingerPrintOutline,
     });
-  }
 
-  ionViewWillEnter() {
     this.user = this.auth.getUser;
 
     this.storage.getBiometricPreferences().then((hasBiometry: boolean) => {
       this.hasBiometry = hasBiometry;
     });
+
+    this.storage.getLoginType().then((loginType: string) => {
+      this.loginWithEmail = loginType === 'email';
+    });
   }
 
-  biometry(event: any) {
-    this.hasBiometry = event.detail.checked;
-    this.storage.setBiometricPreferences(this.hasBiometry).catch(() => {
-      this.toast
-        .create({
-          message: `Erro ao salvar preferência de biometria.`,
-          duration: 2000,
-        })
-        .then((toast) => toast.present());
-    });
+  async biometry(event: any) {
+    try {
+      this.hasBiometry = event.detail.checked;
+      await this.storage.setBiometricPreferences(this.hasBiometry);
+
+    } catch {
+      await this.utils.toastMessage({
+        message: `Erro ao salvar preferência de biometria.`,
+        duration: 2000,
+      });
+    }
   }
 }

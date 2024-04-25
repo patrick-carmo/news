@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -38,6 +38,7 @@ import { NewsItemsComponent } from 'src/app/components/news-items/news-items.com
 import { UtilsService } from 'src/app/services/utils.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -80,9 +81,10 @@ import { AuthService } from 'src/app/services/auth.service';
     IonRefresherContent,
   ],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   user: any;
-  savedNews: any = [];
+  bookmarks$: Subscription;
+  bookmarks: any;
   items: any = [];
   private page: number = 1;
   private readonly qtyItems: number = 15;
@@ -93,29 +95,31 @@ export class HomePage implements OnInit {
   searchItems: any = [];
   private searchPage: number = 1;
 
-  bookmarks: any;
-
   constructor(
     private news: NewsService,
     private utils: UtilsService,
     private auth: AuthService,
     private storage: StorageService
-  ) {}
+  ) {
+    this.user = this.auth.getUser;
+  }
 
   async ngOnInit() {
-    this.user = this.auth.getUser;
+    if (this.user && !this.bookmarks$)
+      this.bookmarks$ = this.storage
+        .getObsDocs(`${this.user.email}-bookmarks`)
+        .subscribe((news: any) => {
+          this.bookmarks = news;
+          if (this.items.length === 0) this.generateItems();
 
-    if (this.user) {
-      const bookmarks = await this.storage.getDocs(
-        `${this.user?.email}-bookmarks`
-      );
+          this.items.forEach((item: any) => {
+            item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
+          });
+        });
+  }
 
-      bookmarks?.docs.forEach((doc: any) => {
-        this.savedNews.push(doc.data());
-      });
-
-      this.generateItems();
-    }
+  ngOnDestroy() {
+    this.bookmarks$.unsubscribe();
   }
 
   private formatItems(data: any) {
@@ -129,7 +133,7 @@ export class HomePage implements OnInit {
         date: item.data_publicacao ? item.data_publicacao.substring(0, 10) : '',
         image: imageLink,
         link: item.link,
-        saved: this.savedNews?.some((doc: any) => doc.id === item.id) ?? false,
+        saved: this.bookmarks.some((doc: any) => doc.id === item.id),
       };
     });
   }
@@ -138,16 +142,8 @@ export class HomePage implements OnInit {
     this.news.getNews(this.qtyItems, page).subscribe(
       (data: any) => {
         const items = this.formatItems(data);
-
-        const filteredItems = items.filter(
-          (newItem: any) =>
-            !this.items.some((item: any) => item.link === newItem.link)
-        );
-
-        if (filteredItems.length > 0) {
-          this.items[arrayMethod](...filteredItems);
-          this.page++;
-        }
+        this.items[arrayMethod](...items);
+        this.page++;
       },
       () => {
         this.utils.toastMessage({
@@ -171,22 +167,14 @@ export class HomePage implements OnInit {
     this.news.searchNews(this.qtyItems, this.searchPage, query).subscribe(
       (data: any) => {
         const items = this.formatItems(data);
+        this.searchItems[arrayMethod](...items);
+        this.searchPage++;
 
-        const filteredItems = items.filter(
-          (newItem: any) =>
-            !this.searchItems.some((item: any) => item.link === newItem.link)
-        );
-
-        if (filteredItems.length > 0) {
-          this.searchItems[arrayMethod](...filteredItems);
-          this.searchPage++;
-          return;
-        }
-
-        this.utils.toastMessage({
-          message: 'Nenhuma notícia encontrada',
-          color: 'warning',
-        });
+        if (items.length === 0)
+          this.utils.toastMessage({
+            message: 'Nenhuma notícia encontrada',
+            color: 'warning',
+          });
       },
       () =>
         this.utils.toastMessage({

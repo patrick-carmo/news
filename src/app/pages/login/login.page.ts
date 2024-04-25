@@ -63,16 +63,18 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class LoginPage {
-  type: 'login' | 'register' = 'login';
+  formType: 'login' | 'register' = 'login';
 
   isNative: boolean = this.auth.isNative;
   hasBiometry: boolean = false;
 
-  name: string = '';
-  email: string = '';
-  password: string = '';
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
 
   showPassword: boolean = false;
+  showPasswordConfirm: boolean = false;
 
   error: string | null = null;
   message: string | null = null;
@@ -107,8 +109,13 @@ export class LoginPage {
     this.menu.enable(true);
   }
 
-  togglePassword() {
-    this.showPassword = !this.showPassword;
+  togglePassword(field: 'password' | 'passwordConfirm' = 'password') {
+    if (field === 'password') {
+      this.showPassword = !this.showPassword;
+      return;
+    }
+
+    this.showPasswordConfirm = !this.showPasswordConfirm;
   }
 
   async openModal() {
@@ -167,6 +174,10 @@ export class LoginPage {
   }
 
   async emailRegister(email: string, password: string) {
+    if (this.password !== this.passwordConfirm) {
+      return this.showMessage('As senhas não coincidem');
+    }
+
     try {
       await this.utils.showLoading();
       const error = await this.auth.createUser(email, password);
@@ -185,9 +196,9 @@ export class LoginPage {
 
   async googleAuth() {
     try {
-      await this.utils.showLoading('Autenticando...');
+      this.utils.showLoading('Autenticando...');
       const error = await this.auth.googleSignIn();
-      await this.utils.dimisLoading();
+      this.utils.dimisLoading();
 
       error ? this.showMessage(error) : this.auth.router.navigate(['/']);
     } catch (error: any) {

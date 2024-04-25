@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, ToastController, ToastOptions } from '@ionic/angular/standalone';
+import {
+  LoadingController,
+  ToastController,
+  ToastOptions,
+  AlertController,
+  AlertOptions,
+} from '@ionic/angular/standalone';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +16,21 @@ export class UtilsService {
   constructor(
     private toast: ToastController,
     private loadingControler: LoadingController,
+    private alertController: AlertController
   ) {}
+
+  async alertMessage(fields: AlertOptions) {
+    const { header, subHeader, message, buttons } = fields;
+
+    const alert = await this.alertController.create({
+      header,
+      subHeader,
+      message,
+      buttons,
+    });
+
+    await alert.present();
+  }
 
   async toastMessage(fields: ToastOptions) {
     const { header, message, color, buttons } = fields;

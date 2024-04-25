@@ -58,6 +58,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class NewsItemsComponent {
   @Input() items: any;
   @Input() isBookmarksPage = false;
+
   search: any;
   constructor(public news: NewsService, private utils: UtilsService) {
     addIcons({
@@ -70,7 +71,7 @@ export class NewsItemsComponent {
     });
   }
 
-  async toogleBookmark(item: any, index?: number) {
+  async toogleBookmark(item: any) {
     try {
       const result = await this.news.toggleBookmarksStorage(item);
 
@@ -93,21 +94,6 @@ export class NewsItemsComponent {
           ],
           color: 'warning',
         });
-
-      if (index === undefined) {
-        if (this.isBookmarksPage) this.items.unshift(item);
-        return result;
-      }
-
-      if (this.items[index]) {
-        this.items[index].saved = result;
-      }
-
-      if (this.isBookmarksPage) {
-        this.items.splice(index, 1);
-      }
-
-      return result;
     } catch (error: any) {
       return this.utils.toastMessage({
         message: 'Erro ao alterar favoritos',

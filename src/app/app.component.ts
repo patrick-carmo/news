@@ -73,7 +73,7 @@ export class AppComponent implements OnDestroy {
       bookmarkOutline,
     });
 
-    this.auth.authState.then((user) => {
+    this.user$ = this.authFirebase$.subscribe((user) => {
       if (user) {
         this.name = user.displayName;
         this.email = user.email;

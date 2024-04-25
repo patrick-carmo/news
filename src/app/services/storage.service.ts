@@ -2,6 +2,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
+import { take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +13,15 @@ export class StorageService {
   constructor(private firestore: AngularFirestore) {}
 
   getDocs(collection: string) {
-    return this.firestore.collection(collection).get().toPromise();
+    return this.firestore
+      .collection(collection)
+      .get()
+      .pipe(take(1))
+      .toPromise();
+  }
+
+  getObsDocs(collection: string) {
+    return this.firestore.collection(collection).valueChanges();
   }
 
   getDoc(collection: string, doc: string | number) {
@@ -20,6 +29,7 @@ export class StorageService {
       .collection(collection)
       .doc(doc.toString())
       .get()
+      .pipe(take(1))
       .toPromise();
   }
 
@@ -44,9 +54,17 @@ export class StorageService {
     await this.setStorage('biometry', value);
   }
 
+  async setLoginType(value: string) {
+    await this.setStorage('loginType', value);
+  }
+
+  async getLoginType() {
+    return await this.getStorage('loginType');
+  }
+
   async setBiometricCredentials(credentials: any) {
     const { username, password } = credentials;
-    NativeBiometric.setCredentials({
+    await NativeBiometric.setCredentials({
       username,
       password,
       server: this.server,
@@ -54,9 +72,15 @@ export class StorageService {
   }
 
   async getBiometricCredentials() {
-    return await NativeBiometric.getCredentials({
-      server: this.server,
-    });
+    try {
+      const credentials = NativeBiometric.getCredentials({
+        server: this.server,
+      });
+
+      return credentials;
+    } catch {
+      return 'Credenciais não encontradas, faça login manualmente.';
+    }
   }
 
   async resetBiometricCredentials() {

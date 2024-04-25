@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -14,11 +14,12 @@ import { NewsItemsComponent } from 'src/app/components/news-items/news-items.com
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-bookmarks',
   templateUrl: './bookmarks.page.html',
-  styleUrls: ['./bookmarks.page.scss'],
+  styleUrls: ['./bookmarks.page.scss', '../../app.component.scss'],
   standalone: true,
   imports: [
     IonItem,
@@ -34,27 +35,28 @@ import { AuthService } from 'src/app/services/auth.service';
     IonSearchbar,
   ],
 })
-export class BookmarksPage {
+export class BookmarksPage implements OnDestroy {
   items: any = [];
   user: any;
   searchItems: any;
   inSearch: boolean = false;
   query: string = '';
 
-  constructor(private storage: StorageService, private auth: AuthService) {}
+  bookmarks$: Subscription;
 
-  ionViewWillEnter() {
+  constructor(private storage: StorageService, private auth: AuthService) {
     this.user = this.auth.getUser;
 
-    if (this.user) {
-      this.items = [];
-
-      this.storage.getDocs(`${this.user?.email}-bookmarks`).then((news) => {
-        news?.docs.forEach((doc: any) => {
-          this.items.push(doc.data());
+    if (this.user)
+      this.bookmarks$ = this.storage
+        .getObsDocs(`${this.user.email}-bookmarks`)
+        .subscribe((news: any) => {
+          this.items = news;
         });
-      });
-    }
+  }
+
+  ngOnDestroy() {
+    this.bookmarks$.unsubscribe();
   }
 
   searchNews() {
