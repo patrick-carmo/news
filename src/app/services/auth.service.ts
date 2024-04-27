@@ -16,7 +16,7 @@ import { UtilsService } from './utils.service';
 export class AuthService implements OnDestroy {
   isNative: boolean = Capacitor.getPlatform() !== 'web';
   private user: firebase.User | null = null;
-  userState$: Subscription;
+  userState$: Subscription | undefined;
 
   constructor(
     private auth: AngularFireAuth,
@@ -36,7 +36,7 @@ export class AuthService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.userState$.unsubscribe();
+    this.userState$?.unsubscribe();
   }
 
   get authState() {
@@ -94,7 +94,6 @@ export class AuthService implements OnDestroy {
 
       return;
     } catch (error) {
-      console.log(error);
       return firebaseError(error);
     }
   }

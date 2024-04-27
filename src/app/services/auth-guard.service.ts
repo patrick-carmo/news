@@ -2,13 +2,14 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { Subscription, take } from 'rxjs';
+import { User } from '../interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuardService implements CanActivate, OnDestroy {
-  userState$: Subscription;
-  user: any;
+  userState$: Subscription | undefined;
+  user: User | null | undefined;
 
   constructor(private auth: AuthService, private router: Router) {
     this.userState$ = this.auth.authState.subscribe((user) => {
@@ -34,6 +35,6 @@ export class AuthGuardService implements CanActivate, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.userState$.unsubscribe();
+    this.userState$?.unsubscribe();
   }
 }

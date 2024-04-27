@@ -68,10 +68,10 @@ export class LoginPage {
   isNative: boolean = this.auth.isNative;
   hasBiometry: boolean = false;
 
-  name: string;
-  email: string;
-  password: string;
-  passwordConfirm: string;
+  name: string = '';
+  email: string = 'null';
+  password: string = '';
+  passwordConfirm: string = '';
 
   showPassword: boolean = false;
   showPasswordConfirm: boolean = false;

@@ -39,6 +39,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { Subscription } from 'rxjs';
+import { News, User } from 'src/app/interfaces/interfaces';
 
 @Component({
   selector: 'app-home',
@@ -82,17 +83,17 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class HomePage implements OnInit, OnDestroy {
-  user: any;
-  bookmarks$: Subscription;
-  bookmarks: any;
-  items: any = [];
+  user: User | null = null;
+  bookmarks$: Subscription | undefined;
+  bookmarks: News[] = [];
+  items: News[] = [];
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
   inSearch: boolean = false;
 
   query: string = '';
-  searchItems: any = [];
+  searchItems: News[] = [];
   private searchPage: number = 1;
 
   constructor(
@@ -112,17 +113,17 @@ export class HomePage implements OnInit, OnDestroy {
           this.bookmarks = news;
           if (this.items.length === 0) this.generateItems();
 
-          this.items.forEach((item: any) => {
+          this.items.forEach((item: News) => {
             item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
           });
         });
   }
 
   ngOnDestroy() {
-    this.bookmarks$.unsubscribe();
+    this.bookmarks$?.unsubscribe();
   }
 
-  private formatItems(data: any) {
+  private formatItems(data: any): News[] {
     return data.items.map((item: any) => {
       const images = JSON.parse(item.imagens);
       const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
@@ -138,7 +139,10 @@ export class HomePage implements OnInit, OnDestroy {
     });
   }
 
-  private generateItems(page: number = 1, arrayMethod: string = 'push') {
+  private generateItems(
+    page: number = 1,
+    arrayMethod: 'push' | 'unshift' = 'push'
+  ) {
     this.news.getNews(this.qtyItems, page).subscribe(
       (data: any) => {
         const items = this.formatItems(data);
@@ -154,7 +158,7 @@ export class HomePage implements OnInit, OnDestroy {
     );
   }
 
-  search(arrayMethod: string = 'unshift') {
+  search(arrayMethod: 'push' | 'unshift' = 'unshift') {
     const query = this.query.toLowerCase().trim();
     if (!query) {
       this.inSearch = false;

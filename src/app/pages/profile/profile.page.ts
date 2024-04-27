@@ -25,15 +25,14 @@ import {
   IonToggle,
   IonInput,
   IonButton,
-  IonicSafeString,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { addIcons } from 'ionicons';
 import { fingerPrintOutline } from 'ionicons/icons';
 import { StorageService } from 'src/app/services/storage.service';
-import { ToastController } from '@ionic/angular';
 import { UtilsService } from 'src/app/services/utils.service';
+import { User } from 'src/app/interfaces/interfaces';
 
 @Component({
   selector: 'app-profile',
@@ -70,10 +69,10 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class ProfilePage {
-  user: any = {};
+  user: User | null;
   hasBiometry: boolean = false;
   isNative: boolean = this.auth.isNative;
-  loginWithEmail: boolean;
+  loginWithEmail: boolean = false;
   constructor(
     private auth: AuthService,
     private storage: StorageService,
@@ -98,7 +97,6 @@ export class ProfilePage {
     try {
       this.hasBiometry = event.detail.checked;
       await this.storage.setBiometricPreferences(this.hasBiometry);
-
     } catch {
       await this.utils.toastMessage({
         message: `Erro ao salvar preferência de biometria.`,

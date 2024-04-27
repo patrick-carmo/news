@@ -15,6 +15,7 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
 import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { Subscription } from 'rxjs';
+import { News, User } from 'src/app/interfaces/interfaces';
 
 @Component({
   selector: 'app-bookmarks',
@@ -36,13 +37,13 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class BookmarksPage implements OnDestroy {
-  items: any = [];
-  user: any;
-  searchItems: any;
+  items: News[] = [];
+  user: User | null = null;
+  searchItems: News[] = [];
   inSearch: boolean = false;
   query: string = '';
 
-  bookmarks$: Subscription;
+  bookmarks$: Subscription | undefined;
 
   constructor(private storage: StorageService, private auth: AuthService) {
     this.user = this.auth.getUser;
@@ -56,7 +57,7 @@ export class BookmarksPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.bookmarks$.unsubscribe();
+    this.bookmarks$?.unsubscribe();
   }
 
   searchNews() {

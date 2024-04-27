@@ -3,10 +3,10 @@
 <ion-content [fullscreen]="true">
   <div class="container">
     <ion-card class="text-center">
-      <img alt="{{user.displayName ?? 'Picture'}}" [src]="user.photoURL ?? 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+      <img alt="{{user?.displayName ?? 'Picture'}}" [src]="user?.photoURL ?? 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
       <ion-card-header>
-        <ion-card-title>{{user.displayName ?? null}}</ion-card-title>
-        <ion-card-subtitle>{{user.email}}</ion-card-subtitle>
+        <ion-card-title>{{user?.displayName ?? null}}</ion-card-title>
+        <ion-card-subtitle>{{user?.email}}</ion-card-subtitle>
       </ion-card-header>
     </ion-card>
 

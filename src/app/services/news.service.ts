@@ -7,14 +7,15 @@ import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { AuthService } from './auth.service';
 import { Subscription } from 'rxjs';
+import { News, User } from '../interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NewsService implements OnDestroy {
-  private user: any;
-  private bookmarks$: Subscription;
-  private bookmarks: any;
+  private user: User | null;
+  private bookmarks$: Subscription | undefined;
+  private bookmarks: News[] = [];
 
   constructor(
     private http: HttpClient,
@@ -34,7 +35,7 @@ export class NewsService implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.bookmarks$.unsubscribe();
+    this.bookmarks$?.unsubscribe();
   }
 
   getNews(qtd: number = 10, page: number = 1) {
