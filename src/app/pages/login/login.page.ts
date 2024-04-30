@@ -1,6 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  FormGroup,
+} from '@angular/forms';
 import {
   IonContent,
   IonHeader,
@@ -34,6 +40,7 @@ import {
 import { ModalComponent } from 'src/app/components/modal/modal.component';
 import { StorageService } from 'src/app/services/storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { AuthForm } from 'src/app/interfaces/interfaces';
 
 @Component({
   selector: 'app-login',
@@ -42,6 +49,7 @@ import { UtilsService } from 'src/app/services/utils.service';
   standalone: true,
   imports: [
     ModalComponent,
+    ReactiveFormsModule,
     IonCard,
     IonItem,
     IonToggle,
@@ -68,15 +76,24 @@ export class LoginPage {
   private menu = inject(MenuController);
   private modalCtrl = inject(ModalController);
   private utils = inject(UtilsService);
+  protected form: FormGroup<AuthForm> = inject(FormBuilder).group({
+    email: ['', [Validators.required, Validators.email]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.pattern(
+          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/
+        ),
+      ],
+    ],
+    confirmPassword: ['', Validators.nullValidator],
+  });
 
   protected formType: 'login' | 'register' = 'login';
 
   protected isNative: boolean = this.auth.isNative;
   protected hasBiometry: boolean = false;
-
-  protected email: string = '';
-  protected password: string = '';
-  protected passwordConfirm: string = '';
 
   protected showPassword: boolean = false;
   protected showPasswordConfirm: boolean = false;
@@ -108,7 +125,24 @@ export class LoginPage {
     this.menu.enable(true);
   }
 
-  protected togglePassword(field: 'password' | 'passwordConfirm' = 'password') {
+  segmentChanged(event: CustomEvent) {
+    if (event.detail.value === 'register') {
+      this.form
+        .get('confirmPassword')
+        ?.setValidators([
+          Validators.required,
+          Validators.pattern(
+            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/
+          ),
+        ]);
+
+      return this.form.get('confirmPassword')?.updateValueAndValidity();
+    }
+
+    this.form.get('confirmPassword')?.clearValidators();
+  }
+
+  protected togglePassword(field: 'password' | 'confirmPassword' = 'password') {
     if (field === 'password') {
       this.showPassword = !this.showPassword;
       return;
@@ -141,6 +175,29 @@ export class LoginPage {
     );
   }
 
+  protected operation() {
+    try {
+      if (this.form.invalid)
+        return this.showMessage('Preencha corretamente os campos');
+
+      const { email, password, confirmPassword } = this.form.value;
+
+      if (!email || !password)
+        return this.showMessage('Preencha todos os campos');
+
+      if (this.formType === 'login') {
+        return this.emailAuth(email, password);
+      }
+
+      if (confirmPassword !== password)
+        return this.showMessage('As senhas não coincidem');
+
+      return this.emailRegister(email, password, confirmPassword);
+    } catch {
+      this.showMessage('Erro interno do servidor');
+    }
+  }
+
   protected async biometryAuth() {
     if (!this.isNative) return this.showMessage('Biometria não disponível');
 
@@ -158,7 +215,7 @@ export class LoginPage {
     }
   }
 
-  protected async emailAuth(email: string, password: string) {
+  private async emailAuth(email: string, password: string) {
     try {
       await this.utils.showLoading();
       const error = await this.auth.emailSignIn(email, password);
@@ -172,8 +229,12 @@ export class LoginPage {
     }
   }
 
-  protected async emailRegister(email: string, password: string) {
-    if (this.password !== this.passwordConfirm) {
+  private async emailRegister(
+    email: string,
+    password: string,
+    passwordConfirm: string
+  ) {
+    if (password !== passwordConfirm) {
       return this.showMessage('As senhas não coincidem');
     }
 

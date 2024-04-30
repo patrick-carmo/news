@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { FormControl } from '@angular/forms';
 
 export interface News {
   id: number;
@@ -17,4 +17,10 @@ export interface User {
   photoURL: string | null;
   providerId: string;
   uid: string;
+}
+
+export interface AuthForm {
+  email: FormControl<string | null>;
+  password: FormControl<string | null>;
+  confirmPassword: FormControl<string | null>;
 }

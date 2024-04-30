@@ -1,7 +1,7 @@
 <ion-content [fullscreen]="true">
   <div id="container">
     <div id="login-container">
-      <ion-segment [(ngModel)]="formType">
+      <ion-segment [(ngModel)]="formType" (ionChange)="segmentChanged($event)">
         <ion-segment-button value="login">
           <ion-label>Logar</ion-label>
           <ion-icon name="log-in-outline"></ion-icon>
@@ -12,17 +12,17 @@
         </ion-segment-button>
       </ion-segment>
 
-      <form #form="ngForm" (keyup.enter)="formType === 'login' ? emailAuth(this.email, this.password) : emailRegister(this.email, this.password)" class="form">
+      <form [formGroup]="form" (ngSubmit)="operation()" class="form">
 
         <img src="../../assets/img/ibge-logo-6.png" id="logo">
         <h1>{{formType === 'login' ? 'Login' : 'Cadastrar'}}</h1>
 
         <div>
-          <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required [(ngModel)]="email"></ion-input>
+          <ion-input fill="outline" shape="round" label="E-mail:" labelPlacement="floating" name="email" type="email" required formControlName="email" errorText="E-mail inválido!"></ion-input>
         </div>
 
         <div class="flex">
-          <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" [type]="showPassword ? 'text' : 'password'" required [(ngModel)]="password">
+          <ion-input fill="outline" shape="round" label="Senha:" labelPlacement="floating" name="password" [type]="showPassword ? 'text' : 'password'" required formControlName="password" errorText="Mínimo de 8 letras, uma letra maiúscula, uma minúscula, um número e um caractere especial">
           </ion-input>
 
           <ion-button slot="end" class="floating" fill="clear" shape="round" (click)="togglePassword()">
@@ -31,10 +31,10 @@
         </div>
 
         <div class="flex" *ngIf="formType === 'register'">
-          <ion-input fill="outline" shape="round" label="Confirmar Senha:" labelPlacement="floating" name="passwordConfirm" [type]="showPasswordConfirm ? 'text' : 'password'" required [(ngModel)]="passwordConfirm">
+          <ion-input fill="outline" shape="round" label="Confirmar Senha:" labelPlacement="floating" name="confirmPassword" [type]="showPasswordConfirm ? 'text' : 'password'" formControlName="confirmPassword" errorText="Mínimo de 8 letras, uma letra maiúscula, uma minúscula, um número e um caractere especial">
           </ion-input>
 
-          <ion-button slot="end" class="floating" fill="clear" shape="round" (click)="togglePassword('passwordConfirm')">
+          <ion-button slot="end" class="floating" fill="clear" shape="round" (click)="togglePassword('confirmPassword')">
             <ion-icon slot="icon-only" [name]="showPasswordConfirm ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
           </ion-button>
         </div>
@@ -44,9 +44,9 @@
         </div>
 
         <div class="flex">
-          <ion-button shape="round" (click)="formType === 'login' ? emailAuth(this.email, this.password) : emailRegister(this.email, this.password)" size="small">{{formType === 'login' ? 'Logar' : 'Cadastrar'}}</ion-button>
+          <ion-button shape="round" type="submit" size="small">{{formType === 'login' ? 'Logar' : 'Cadastrar'}}</ion-button>
 
-          <ion-button (click)="form.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
+          <ion-button type="reset" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
 
         <div>

@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+} from '@angular/forms';
 import {
   IonHeader,
   IonInput,
@@ -23,6 +28,7 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./modal.component.scss'],
   standalone: true,
   imports: [
+    ReactiveFormsModule,
     IonText,
     CommonModule,
     IonIcon,
@@ -39,12 +45,18 @@ import { AuthService } from 'src/app/services/auth.service';
   ],
 })
 export class ModalComponent {
+  private modalCtrl = inject(ModalController);
+  private auth = inject(AuthService);
+  private form = inject(FormBuilder).group({
+    emailReset: ['', Validators.required],
+  });
+
   protected emailReset: string = '';
-  protected message: any = '';
+  protected message: string | null = '';
   protected success: boolean = false;
   private messageTimeout: any;
 
-  constructor(private modalCtrl: ModalController, private auth: AuthService) {}
+  constructor() {}
 
   protected cancel() {
     return this.modalCtrl.dismiss(null, 'cancel');
@@ -60,7 +72,7 @@ export class ModalComponent {
 
       this.success = true;
       return this.showMessage(
-        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.',
+        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.'
       );
     } catch (error) {
       return this.modalCtrl.dismiss(error, 'error');
@@ -76,7 +88,7 @@ export class ModalComponent {
         this.message = null;
         this.success = false;
       },
-      this.success  ? 10000 : 5000
+      this.success ? 10000 : 5000
     );
   }
 }
