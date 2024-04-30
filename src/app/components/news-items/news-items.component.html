@@ -8,24 +8,18 @@
 
     <ion-card-content>{{item.intro}}</ion-card-content>
 
-    <ion-grid>
-      <ion-row class="ion-justify-content-center">
-        <ion-col>
-          <ion-button (click)="news.openNews(item.link)" shape="round">Leia mais</ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <ion-button (click)="news.openNews(item.link)" shape="round" class="padding-button">Leia mais</ion-button>
   </ion-card>
   <ion-fab horizontal="end" vertical="bottom" class="padding-right">
     <ion-fab-button size="small">
-      <ion-icon name="share-social-sharp"></ion-icon>
+      <ion-icon name="add"></ion-icon>
     </ion-fab-button>
     <ion-fab-list side="top">
       <ion-fab-button (click)="news.copyLink(item.link)">
         <ion-icon name="document"></ion-icon>
       </ion-fab-button>
       <ion-fab-button (click)="news.shareNews(item.link)">
-        <ion-icon name="globe"></ion-icon>
+        <ion-icon name="share-social-sharp"></ion-icon>
       </ion-fab-button>
       <ion-fab-button>
         <ion-icon [name]="getItemIcon(item)" (click)="toogleBookmark(item)"></ion-icon>

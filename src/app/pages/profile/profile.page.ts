@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -69,15 +69,16 @@ import { User } from 'src/app/interfaces/interfaces';
   ],
 })
 export class ProfilePage {
-  user: User | null;
-  hasBiometry: boolean = false;
-  isNative: boolean = this.auth.isNative;
-  loginWithEmail: boolean = false;
-  constructor(
-    private auth: AuthService,
-    private storage: StorageService,
-    private utils: UtilsService
-  ) {
+  private auth = inject(AuthService);
+  private storage = inject(StorageService);
+  private utils = inject(UtilsService);
+
+  protected user: User | null;
+  protected hasBiometry: boolean = false;
+  protected isNative: boolean = this.auth.isNative;
+  protected loginWithEmail: boolean = false;
+
+  constructor() {
     addIcons({
       fingerPrintOutline,
     });
@@ -93,7 +94,7 @@ export class ProfilePage {
     });
   }
 
-  async biometry(event: any) {
+  protected async biometry(event: any) {
     try {
       this.hasBiometry = event.detail.checked;
       await this.storage.setBiometricPreferences(this.hasBiometry);

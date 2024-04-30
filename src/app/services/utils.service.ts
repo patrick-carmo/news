@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   LoadingController,
   ToastController,
@@ -11,13 +11,13 @@ import {
   providedIn: 'root',
 })
 export class UtilsService {
+  private toast = inject(ToastController);
+  private loadingControler = inject(LoadingController);
+  private alertController = inject(AlertController);
+
   private loading: any;
 
-  constructor(
-    private toast: ToastController,
-    private loadingControler: LoadingController,
-    private alertController: AlertController
-  ) {}
+  constructor() {}
 
   async alertMessage(fields: AlertOptions) {
     const { header, subHeader, message, buttons } = fields;

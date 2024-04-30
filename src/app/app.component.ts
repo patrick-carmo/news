@@ -59,11 +59,11 @@ import { Observable, Subscription } from 'rxjs';
   ],
 })
 export class AppComponent implements OnDestroy {
-  name: string | null | undefined;
-  email: string | null | undefined;
-  photo: string | null | undefined;
-  authFirebase$ = this.auth.authState;
-  user$: Subscription;
+  protected name: string | null | undefined;
+  protected email: string | null | undefined;
+  protected photo: string | null | undefined;
+  private authFirebase$ = this.auth.authState;
+  private user$: Subscription;
   constructor(public auth: AuthService) {
     addIcons({
       newspaperOutline,

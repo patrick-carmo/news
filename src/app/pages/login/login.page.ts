@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -41,12 +41,12 @@ import { UtilsService } from 'src/app/services/utils.service';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
+    ModalComponent,
     IonCard,
     IonItem,
     IonToggle,
     IonCheckbox,
     IonText,
-    ModalComponent,
     IonIcon,
     IonInput,
     IonButton,
@@ -63,31 +63,30 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class LoginPage {
-  formType: 'login' | 'register' = 'login';
+  private auth = inject(AuthService);
+  private storage = inject(StorageService);
+  private menu = inject(MenuController);
+  private modalCtrl = inject(ModalController);
+  private utils = inject(UtilsService);
 
-  isNative: boolean = this.auth.isNative;
-  hasBiometry: boolean = false;
+  protected formType: 'login' | 'register' = 'login';
 
-  name: string = '';
-  email: string = 'null';
-  password: string = '';
-  passwordConfirm: string = '';
+  protected isNative: boolean = this.auth.isNative;
+  protected hasBiometry: boolean = false;
 
-  showPassword: boolean = false;
-  showPasswordConfirm: boolean = false;
+  protected email: string = '';
+  protected password: string = '';
+  protected passwordConfirm: string = '';
 
-  error: string | null = null;
-  message: string | null = null;
+  protected showPassword: boolean = false;
+  protected showPasswordConfirm: boolean = false;
+
+  protected error: string | null = null;
+  protected message: string | null = null;
 
   private messageTimeout: any;
 
-  constructor(
-    private auth: AuthService,
-    private storage: StorageService,
-    private menu: MenuController,
-    private modalCtrl: ModalController,
-    private utils: UtilsService
-  ) {
+  constructor() {
     addIcons({
       enterOutline,
       addCircleOutline,
@@ -109,7 +108,7 @@ export class LoginPage {
     this.menu.enable(true);
   }
 
-  togglePassword(field: 'password' | 'passwordConfirm' = 'password') {
+  protected togglePassword(field: 'password' | 'passwordConfirm' = 'password') {
     if (field === 'password') {
       this.showPassword = !this.showPassword;
       return;
@@ -118,7 +117,7 @@ export class LoginPage {
     this.showPasswordConfirm = !this.showPasswordConfirm;
   }
 
-  async openModal() {
+  protected async openModal() {
     const modal = await this.modalCtrl.create({
       component: ModalComponent,
       cssClass: 'login-modal',
@@ -142,7 +141,7 @@ export class LoginPage {
     );
   }
 
-  async biometryAuth() {
+  protected async biometryAuth() {
     if (!this.isNative) return this.showMessage('Biometria não disponível');
 
     try {
@@ -159,7 +158,7 @@ export class LoginPage {
     }
   }
 
-  async emailAuth(email: string, password: string) {
+  protected async emailAuth(email: string, password: string) {
     try {
       await this.utils.showLoading();
       const error = await this.auth.emailSignIn(email, password);
@@ -173,7 +172,7 @@ export class LoginPage {
     }
   }
 
-  async emailRegister(email: string, password: string) {
+  protected async emailRegister(email: string, password: string) {
     if (this.password !== this.passwordConfirm) {
       return this.showMessage('As senhas não coincidem');
     }
@@ -194,7 +193,7 @@ export class LoginPage {
     }
   }
 
-  async googleAuth() {
+  protected async googleAuth() {
     try {
       this.utils.showLoading('Autenticando...');
       const error = await this.auth.googleSignIn();

@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { firebaseError } from '../utils/errorFirebase';
@@ -14,16 +14,16 @@ import { UtilsService } from './utils.service';
   providedIn: 'root',
 })
 export class AuthService implements OnDestroy {
+  router = inject(Router);
+  private auth = inject(AngularFireAuth);
+  private storage = inject(StorageService);
+  private utils = inject(UtilsService);
+
   isNative: boolean = Capacitor.getPlatform() !== 'web';
   private user: firebase.User | null = null;
-  userState$: Subscription | undefined;
+  private userState$: Subscription | undefined;
 
-  constructor(
-    private auth: AngularFireAuth,
-    public router: Router,
-    private storage: StorageService,
-    private utils: UtilsService
-  ) {
+  constructor() {
     GoogleAuth.initialize({
       clientId:
         '123060927074-5mks66l4aq435n1cv3g3mmnjfrass3u7.apps.googleusercontent.com',
@@ -241,9 +241,9 @@ export class AuthService implements OnDestroy {
     }
   }
 
-  async refreshToken(user: any) {
+  async refreshToken(user: firebase.User) {
     try {
-      await user?.getIdTokenResult(true);
+      await user.getIdTokenResult(true);
       return true;
     } catch (error) {
       return null;

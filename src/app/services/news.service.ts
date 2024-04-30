@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { StorageService } from './storage.service';
 import { UtilsService } from './utils.service';
 import { Share } from '@capacitor/share';
@@ -13,16 +13,16 @@ import { News, User } from '../interfaces/interfaces';
   providedIn: 'root',
 })
 export class NewsService implements OnDestroy {
+  private http = inject(HttpClient);
+  private storage = inject(StorageService);
+  private utils = inject(UtilsService);
+  private auth = inject(AuthService);
+
   private user: User | null;
   private bookmarks$: Subscription | undefined;
   private bookmarks: News[] = [];
 
-  constructor(
-    private http: HttpClient,
-    private storage: StorageService,
-    private utils: UtilsService,
-    private auth: AuthService
-  ) {
+  constructor() {
     this.user = this.auth.getUser;
 
     if (this.user) {
@@ -54,7 +54,7 @@ export class NewsService implements OnDestroy {
     return this.bookmarks;
   }
 
-  async toggleBookmarksStorage(news: any) {
+  async toggleBookmarksStorage(news: News) {
     if (this.user) {
       const doc = await this.storage.getDoc(
         `${this.user?.email}-bookmarks`,
@@ -71,13 +71,13 @@ export class NewsService implements OnDestroy {
       news.saved = true;
       await this.storage.setDoc(`${this.user?.email}-bookmarks`, news.id, news);
       return true;
-    } else {
-      this.utils.toastMessage({
-        message: 'Faça login para salvar notícias',
-        color: 'warning',
-      });
-      throw new Error('Usuário não autenticado');
     }
+
+    this.utils.toastMessage({
+      message: 'Faça login para salvar notícias',
+      color: 'warning',
+    });
+    throw new Error('Usuário não autenticado');
   }
 
   async copyLink(link: string) {

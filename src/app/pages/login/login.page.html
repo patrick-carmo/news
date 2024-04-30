@@ -12,7 +12,7 @@
         </ion-segment-button>
       </ion-segment>
 
-      <form #loginForm="ngForm" (keyup.enter)="formType === 'login' ? emailAuth(this.email, this.password) : emailRegister(this.email, this.password)" class="form">
+      <form #form="ngForm" (keyup.enter)="formType === 'login' ? emailAuth(this.email, this.password) : emailRegister(this.email, this.password)" class="form">
 
         <img src="../../assets/img/ibge-logo-6.png" id="logo">
         <h1>{{formType === 'login' ? 'Login' : 'Cadastrar'}}</h1>
@@ -46,7 +46,7 @@
         <div class="flex">
           <ion-button shape="round" (click)="formType === 'login' ? emailAuth(this.email, this.password) : emailRegister(this.email, this.password)" size="small">{{formType === 'login' ? 'Logar' : 'Cadastrar'}}</ion-button>
 
-          <ion-button (click)="loginForm.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
+          <ion-button (click)="form.reset()" color="medium" shape="round" size="small">Limpar</ion-button>
         </div>
 
         <div>

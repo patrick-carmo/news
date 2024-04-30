@@ -20,13 +20,14 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  add,
   bookmarkOutline,
   bookmarkSharp,
   chevronDownCircleOutline,
   document,
-  globe,
   shareSocialSharp,
 } from 'ionicons/icons';
+import { News } from 'src/app/interfaces/interfaces';
 import { NewsService } from 'src/app/services/news.service';
 import { UtilsService } from 'src/app/services/utils.service';
 
@@ -56,22 +57,22 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class NewsItemsComponent {
-  @Input() items: any;
+  @Input() items: News[] = [];
   @Input() isBookmarksPage = false;
 
-  search: any;
+  protected search: News[] = [];
   constructor(public news: NewsService, private utils: UtilsService) {
     addIcons({
       shareSocialSharp,
+      add,
       document,
-      globe,
       chevronDownCircleOutline,
       bookmarkOutline,
       bookmarkSharp,
     });
   }
 
-  async toogleBookmark(item: any) {
+  protected async toogleBookmark(item: any) {
     try {
       const result = await this.news.toggleBookmarksStorage(item);
 
@@ -102,7 +103,7 @@ export class NewsItemsComponent {
     }
   }
 
-  getItemIcon(item: any) {
+  protected getItemIcon(item: any) {
     return item.saved ? 'bookmark-sharp' : 'bookmark-outline';
   }
 }

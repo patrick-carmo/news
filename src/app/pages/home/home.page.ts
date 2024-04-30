@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -83,25 +83,25 @@ import { News, User } from 'src/app/interfaces/interfaces';
   ],
 })
 export class HomePage implements OnInit, OnDestroy {
-  user: User | null = null;
-  bookmarks$: Subscription | undefined;
-  bookmarks: News[] = [];
-  items: News[] = [];
+  private news = inject(NewsService);
+  private utils = inject(UtilsService);
+  private auth = inject(AuthService);
+  private storage = inject(StorageService);
+
+  protected user: User | null = null;
+  protected bookmarks$: Subscription | undefined;
+  protected bookmarks: News[] = [];
+  protected items: News[] = [];
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
-  inSearch: boolean = false;
+  protected inSearch: boolean = false;
 
-  query: string = '';
-  searchItems: News[] = [];
+  protected query: string = '';
+  protected searchItems: News[] = [];
   private searchPage: number = 1;
 
-  constructor(
-    private news: NewsService,
-    private utils: UtilsService,
-    private auth: AuthService,
-    private storage: StorageService
-  ) {
+  constructor() {
     this.user = this.auth.getUser;
   }
 
@@ -158,7 +158,7 @@ export class HomePage implements OnInit, OnDestroy {
     );
   }
 
-  search(arrayMethod: 'push' | 'unshift' = 'unshift') {
+  protected search(arrayMethod: 'push' | 'unshift' = 'unshift') {
     const query = this.query.toLowerCase().trim();
     if (!query) {
       this.inSearch = false;
@@ -188,7 +188,7 @@ export class HomePage implements OnInit, OnDestroy {
     );
   }
 
-  onIonInfinite(ev: any, search: boolean = false) {
+  protected onIonInfinite(ev: any, search: boolean = false) {
     if (search) {
       this.search('push');
     } else {
@@ -201,7 +201,7 @@ export class HomePage implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  handleRefresh(event: any, search: boolean = false) {
+  protected handleRefresh(event: any, search: boolean = false) {
     setTimeout(() => {
       if (search) {
         this.searchItems = [];

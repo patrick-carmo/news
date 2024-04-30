@@ -1,5 +1,5 @@
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { take } from 'rxjs';
@@ -8,9 +8,10 @@ import { take } from 'rxjs';
   providedIn: 'root',
 })
 export class StorageService {
+  private firestore = inject(AngularFirestore);
   private server = import.meta.env['NG_APP_SERVER'];
 
-  constructor(private firestore: AngularFirestore) {}
+  constructor() {}
 
   getDocs(collection: string) {
     return this.firestore

@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -37,15 +37,18 @@ import { News, User } from 'src/app/interfaces/interfaces';
   ],
 })
 export class BookmarksPage implements OnDestroy {
-  items: News[] = [];
-  user: User | null = null;
-  searchItems: News[] = [];
-  inSearch: boolean = false;
-  query: string = '';
+  private storage = inject(StorageService);
+  private auth = inject(AuthService);
 
-  bookmarks$: Subscription | undefined;
+  protected items: News[] = [];
+  private user: User | null = null;
+  protected searchItems: News[] = [];
+  protected inSearch: boolean = false;
+  protected query: string = '';
 
-  constructor(private storage: StorageService, private auth: AuthService) {
+  protected bookmarks$: Subscription | undefined;
+
+  constructor() {
     this.user = this.auth.getUser;
 
     if (this.user)
@@ -60,7 +63,7 @@ export class BookmarksPage implements OnDestroy {
     this.bookmarks$?.unsubscribe();
   }
 
-  searchNews() {
+  protected searchNews() {
     const query = this.query.toLowerCase().trim();
     if (!query) {
       this.inSearch = false;

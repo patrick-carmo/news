@@ -1,40 +1,35 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { CanActivate } from '@angular/router';
 import { AuthService } from './auth.service';
-import { Subscription, take } from 'rxjs';
-import { User } from '../interfaces/interfaces';
+import { take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuardService implements CanActivate, OnDestroy {
-  userState$: Subscription | undefined;
-  user: User | null | undefined;
-
-  constructor(private auth: AuthService, private router: Router) {
-    this.userState$ = this.auth.authState.subscribe((user) => {
-      this.user = user;
-    });
-  }
+export class AuthGuardService implements CanActivate {
+  private auth = inject(AuthService);
+  constructor() {}
 
   async canActivate() {
     try {
-      if (this.user) return true;
+      const user = this.auth.getUser;
 
-      if (!this.user) {
-        this.user = await this.auth.authState.pipe(take(1)).toPromise();
-        if (this.user) return true;
+      if (user) {
+        this.auth.refreshToken(user);
+        return true;
       }
 
-      this.router.navigate(['/login']);
+      const authState = await this.auth.authState.pipe(take(1)).toPromise();
+
+      if (authState) {
+        return true;
+      }
+
+      this.auth.router.navigate(['/login']);
       return false;
     } catch {
-      this.router.navigate(['/login']);
+      this.auth.router.navigate(['/login']);
       return false;
     }
-  }
-
-  ngOnDestroy() {
-    this.userState$?.unsubscribe();
   }
 }

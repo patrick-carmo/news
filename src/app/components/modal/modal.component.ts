@@ -39,18 +39,18 @@ import { AuthService } from 'src/app/services/auth.service';
   ],
 })
 export class ModalComponent {
-  emailReset: string = '';
-  message: any = '';
-  success: boolean = false;
+  protected emailReset: string = '';
+  protected message: any = '';
+  protected success: boolean = false;
   private messageTimeout: any;
 
   constructor(private modalCtrl: ModalController, private auth: AuthService) {}
 
-  cancel() {
+  protected cancel() {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  async confirm() {
+  protected async confirm() {
     try {
       const error = await this.auth.resetPassword(this.emailReset);
 
