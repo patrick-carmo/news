@@ -2,7 +2,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Injectable, inject } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
-import { take } from 'rxjs';
+import { News, User } from '../interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -13,33 +13,64 @@ export class StorageService {
 
   constructor() {}
 
-  getDocs(collection: string) {
+  getBookmarks(user: User) {
     return this.firestore
-      .collection(collection)
-      .get()
-      .pipe(take(1))
-      .toPromise();
+      .collection('users')
+      .doc(user.email as string)
+      .collection('bookmarks')
+      .valueChanges();
   }
 
-  getObsDocs(collection: string) {
-    return this.firestore.collection(collection).valueChanges();
-  }
-
-  getDoc(collection: string, doc: string | number) {
+  getBookmark(user: User, data: News) {
     return this.firestore
-      .collection(collection)
-      .doc(doc.toString())
+      .collection('users')
+      .doc(user.email as string)
+      .collection('bookmarks')
+      .doc(data.id.toString())
       .get()
-      .pipe(take(1))
-      .toPromise();
   }
 
-  setDoc(collection: string, doc: string | number, data: any) {
-    return this.firestore.collection(collection).doc(doc.toString()).set(data);
+  setBookmark(user: User, data: News) {
+    return this.firestore
+      .collection('users')
+      .doc(user.email as string)
+      .collection('bookmarks')
+      .doc(data.id.toString())
+      .set(data);
   }
 
-  delDoc(collection: string, doc: string | number) {
-    return this.firestore.collection(collection).doc(doc.toString()).delete();
+  delBookmark(user: User, data: News) {
+    return this.firestore
+      .collection('users')
+      .doc(user.email as string)
+      .collection('bookmarks')
+      .doc(data.id.toString())
+      .delete();
+  }
+
+  getComments(data: News) {
+    return this.firestore
+      .collection('posts')
+      .doc(data.id.toString())
+      .collection('comments')
+      .valueChanges();
+  }
+
+  setComments(data: News, comment: any) {
+    return this.firestore
+      .collection('posts')
+      .doc(data.id.toString())
+      .collection('comments')
+      .add(comment);
+  }
+
+  delComments(data: News, comment: any) {
+    return this.firestore
+      .collection('posts')
+      .doc(data.id.toString())
+      .collection('comments')
+      .doc(comment.id)
+      .delete();
   }
 
   async getStorage(key: string) {

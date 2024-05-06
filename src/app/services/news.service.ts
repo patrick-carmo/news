@@ -6,7 +6,7 @@ import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { AuthService } from './auth.service';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription, firstValueFrom } from 'rxjs';
 import { News, User } from '../interfaces/interfaces';
 
 @Injectable({
@@ -19,61 +19,58 @@ export class NewsService implements OnDestroy {
   private auth = inject(AuthService);
 
   private user: User | null;
-  private bookmarks$: Subscription | undefined;
-  private bookmarks: News[] = [];
+  private bookmarks$ = new BehaviorSubject<News[]>([]);
+  private bookmarksSub$: Subscription | undefined;
 
   constructor() {
     this.user = this.auth.getUser;
 
     if (this.user) {
-      this.bookmarks$ = this.storage
-        .getObsDocs(`${this.user.email}-bookmarks`)
+      this.bookmarksSub$ = this.storage
+        .getBookmarks(this.user)
         .subscribe((news: any) => {
-          this.bookmarks = news;
+          this.bookmarks$.next(news);
         });
     }
   }
 
   ngOnDestroy() {
-    this.bookmarks$?.unsubscribe();
+    this.bookmarksSub$?.unsubscribe();
+  }
+
+  getObsBookmarks() {
+    return this.bookmarks$.asObservable();
   }
 
   getNews(qtd: number = 10, page: number = 1) {
-    return this.http.get(
+    return this.http.get<News[]>(
       `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}`
     );
   }
 
   searchNews(qtd: number = 10, page: number = 1, query: string) {
-    return this.http.get(
+    return this.http.get<News[]>(
       `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}&busca=${query}`
     );
   }
 
-  getBookmarks() {
-    return this.bookmarks;
-  }
-
   async toggleBookmarksStorage(news: News) {
     if (this.user) {
-      const doc = await this.storage.getDoc(
-        `${this.user?.email}-bookmarks`,
-        news.id
+      const doc = await firstValueFrom(
+        this.storage.getBookmark(this.user, news)
       );
 
-      if (!doc) throw new Error('Erro ao buscar notícia');
-
       if (doc.exists) {
-        await this.storage.delDoc(`${this.user?.email}-bookmarks`, news.id);
+        await this.storage.delBookmark(this.user, news);
         return false;
       }
 
       news.saved = true;
-      await this.storage.setDoc(`${this.user?.email}-bookmarks`, news.id, news);
+      await this.storage.setBookmark(this.user, news);
       return true;
     }
 
-    this.utils.toastMessage({
+    await this.utils.toastMessage({
       message: 'Faça login para salvar notícias',
       color: 'warning',
     });
@@ -85,8 +82,13 @@ export class NewsService implements OnDestroy {
       await Clipboard.write({
         string: link,
       });
-    } catch (error: any) {
-      this.utils.toastMessage({ message: error.message, color: 'danger' });
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao copiar link',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
     }
   }
 
@@ -95,10 +97,26 @@ export class NewsService implements OnDestroy {
       await Share.share({
         url,
       });
-    } catch {}
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao compartilhar notícia',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 
   async openNews(url: string) {
-    await Browser.open({ url });
+    try {
+      await Browser.open({ url });
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao abrir notícia',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 }

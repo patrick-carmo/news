@@ -37,10 +37,10 @@ import {
   logInOutline,
   logoGoogle,
 } from 'ionicons/icons';
-import { ModalComponent } from 'src/app/components/modal/modal.component';
 import { StorageService } from 'src/app/services/storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthForm } from 'src/app/interfaces/interfaces';
+import { ResetPasswordComponent } from 'src/app/components/reset-password/reset-password.component';
 
 @Component({
   selector: 'app-login',
@@ -48,7 +48,7 @@ import { AuthForm } from 'src/app/interfaces/interfaces';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
-    ModalComponent,
+    ResetPasswordComponent,
     ReactiveFormsModule,
     IonCard,
     IonItem,
@@ -153,7 +153,7 @@ export class LoginPage {
 
   protected async openModal() {
     const modal = await this.modalCtrl.create({
-      component: ModalComponent,
+      component: ResetPasswordComponent,
       cssClass: 'login-modal',
       breakpoints: [0, 0.4, 1],
       initialBreakpoint: 0.4,

@@ -1,16 +1,27 @@
 <ion-item *ngFor="let item of items; let index = index" class="text-center">
   <ion-card>
-    <ion-img [src]="item.image" [alt]="item.title"></ion-img>
+    <ion-img [src]="item.image" [alt]="item.title" (click)="news.openNews(item.link)"></ion-img>
     <ion-card-header>
       <ion-card-title>{{item.title}}</ion-card-title>
       <ion-card-subtitle>{{item.date}}</ion-card-subtitle>
     </ion-card-header>
 
-    <ion-card-content>{{item.intro}}</ion-card-content>
+    <ion-card-content>{{item.intro}}
+      <ion-button (click)="news.openNews(item.link)" shape="round" class="ion-margin-bottom" fill="clear">Ler mais</ion-button>
+    </ion-card-content>
 
-    <ion-button (click)="news.openNews(item.link)" shape="round" class="padding-button">Leia mais</ion-button>
+    <ion-buttons class="ion-justify-content-center">
+      <div>
+        <ion-button shape="round">0</ion-button>
+        <ion-button shape="round">
+          <ion-icon name="thumbs-up-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <ion-button shape="round" color="primary" fill="solid" (click)="openComments()">Comentários</ion-button>
+    </ion-buttons>
+
   </ion-card>
-  <ion-fab horizontal="end" vertical="bottom" class="padding-right">
+  <ion-fab horizontal="end" vertical="bottom" class="ion-margin-end">
     <ion-fab-button size="small">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

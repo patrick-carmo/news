@@ -1,57 +1,53 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import {
+  FormBuilder,
   FormsModule,
   ReactiveFormsModule,
-  FormBuilder,
   Validators,
 } from '@angular/forms';
+
 import {
-  IonHeader,
-  IonInput,
-  IonToolbar,
-  IonContent,
-  IonTitle,
-  IonItem,
-  IonButton,
-  IonButtons,
   ModalController,
-  IonModal,
-  IonIcon,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonButton,
   IonText,
+  IonIcon,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-modal',
-  templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.scss'],
+  selector: 'app-reset-password',
+  templateUrl: './reset-password.component.html',
+  styleUrls: ['./reset-password.component.scss'],
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    IonText,
-    CommonModule,
     IonIcon,
-    IonModal,
+    ReactiveFormsModule,
+    CommonModule,
+    FormsModule,
+    IonText,
     IonButton,
-    IonToolbar,
     IonInput,
-    IonHeader,
+    IonItem,
     IonContent,
     IonTitle,
-    IonItem,
-    IonButtons,
-    FormsModule,
+    IonToolbar,
+    IonHeader,
   ],
 })
-export class ModalComponent {
+export class ResetPasswordComponent {
   private modalCtrl = inject(ModalController);
   private auth = inject(AuthService);
-  private form = inject(FormBuilder).group({
-    emailReset: ['', Validators.required],
+  protected resetForm = inject(FormBuilder).group({
+    resetEmail: ['', [Validators.required, Validators.email]],
   });
 
-  protected emailReset: string = '';
   protected message: string | null = '';
   protected success: boolean = false;
   private messageTimeout: any;
@@ -64,7 +60,15 @@ export class ModalComponent {
 
   protected async confirm() {
     try {
-      const error = await this.auth.resetPassword(this.emailReset);
+      if (this.resetForm.invalid) {
+        return this.showMessage('E-mail inválido.');
+      }
+
+      const resetEmail = this.resetForm.get('resetEmail')?.value;
+
+      if (!resetEmail) return this.showMessage('E-mail inválido.');
+
+      const error = await this.auth.resetPassword(resetEmail);
 
       if (error) {
         return this.showMessage(error);

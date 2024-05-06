@@ -1,0 +1,17 @@
+<ion-content class="ion-padding ion-text-center">
+  <div class="ion-margin">
+    <ion-title *ngIf="!comments.length">Sem comentários no momento</ion-title>
+
+    <ion-list>
+      <ion-item *ngFor="let comment of comments">
+        <ion-avatar slot="start">
+          <img src="assets/img/avatar.png" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{comment.user}}</h2>
+          <p>{{comment.comment}}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

@@ -99,7 +99,7 @@ export class ProfilePage {
       this.hasBiometry = event.detail.checked;
       await this.storage.setBiometricPreferences(this.hasBiometry);
     } catch {
-      await this.utils.toastMessage({
+      this.utils.toastMessage({
         message: `Erro ao salvar preferência de biometria.`,
         duration: 2000,
       });

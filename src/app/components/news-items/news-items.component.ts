@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import {
   IonItem,
   IonCard,
@@ -17,6 +17,8 @@ import {
   IonIcon,
   IonFabList,
   IonSearchbar,
+  IonButtons,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -26,10 +28,12 @@ import {
   chevronDownCircleOutline,
   document,
   shareSocialSharp,
+  thumbsUpOutline,
 } from 'ionicons/icons';
 import { News } from 'src/app/interfaces/interfaces';
 import { NewsService } from 'src/app/services/news.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { CommentsComponent } from '../comments/comments.component';
 
 @Component({
   selector: 'app-news-items',
@@ -37,6 +41,7 @@ import { UtilsService } from 'src/app/services/utils.service';
   styleUrls: ['./news-items.component.scss', '../../app.component.scss'],
   standalone: true,
   imports: [
+    IonButtons,
     IonSearchbar,
     CommonModule,
     IonItem,
@@ -57,11 +62,15 @@ import { UtilsService } from 'src/app/services/utils.service';
   ],
 })
 export class NewsItemsComponent {
+  protected news = inject(NewsService);
+  private utils = inject(UtilsService);
+  private modalCtrl = inject(ModalController);
+
   @Input() items: News[] = [];
   @Input() isBookmarksPage = false;
 
   protected search: News[] = [];
-  constructor(public news: NewsService, private utils: UtilsService) {
+  constructor() {
     addIcons({
       shareSocialSharp,
       add,
@@ -69,37 +78,61 @@ export class NewsItemsComponent {
       chevronDownCircleOutline,
       bookmarkOutline,
       bookmarkSharp,
+      thumbsUpOutline,
     });
+  }
+
+  protected async openComments() {
+    const modal = await this.modalCtrl.create({
+      component: CommentsComponent,
+      breakpoints: [0, 0.4, 1],
+      initialBreakpoint: 0.8,
+    });
+    await modal.present();
   }
 
   protected async toogleBookmark(item: any) {
     try {
       const result = await this.news.toggleBookmarksStorage(item);
 
-      if (result)
+      if (result) {
         await this.utils.toastMessage({
           message: 'Notícia salva',
           color: 'success',
-        });
-      else
-        await this.utils.toastMessage({
-          message: 'Notícia removida',
           buttons: [
             {
               text: 'Desfazer',
               role: 'cancel',
-              handler: async () => {
-                return await this.toogleBookmark(item);
+              handler: () => {
+                return this.toogleBookmark(item);
               },
             },
           ],
-          color: 'warning',
         });
-    } catch (error: any) {
-      return this.utils.toastMessage({
-        message: 'Erro ao alterar favoritos',
-        color: 'danger',
+
+        return;
+      }
+
+      await this.utils.toastMessage({
+        message: 'Notícia removida',
+        buttons: [
+          {
+            text: 'Desfazer',
+            role: 'cancel',
+            handler: () => {
+              return this.toogleBookmark(item);
+            },
+          },
+        ],
+        color: 'warning',
       });
+    } catch (error: any) {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao alterar favoritos',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
     }
   }
 

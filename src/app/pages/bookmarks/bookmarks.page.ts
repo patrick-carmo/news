@@ -16,6 +16,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { Subscription } from 'rxjs';
 import { News, User } from 'src/app/interfaces/interfaces';
+import { NewsService } from 'src/app/services/news.service';
 
 @Component({
   selector: 'app-bookmarks',
@@ -37,8 +38,8 @@ import { News, User } from 'src/app/interfaces/interfaces';
   ],
 })
 export class BookmarksPage implements OnDestroy {
-  private storage = inject(StorageService);
   private auth = inject(AuthService);
+  private news = inject(NewsService);
 
   protected items: News[] = [];
   private user: User | null = null;
@@ -52,11 +53,9 @@ export class BookmarksPage implements OnDestroy {
     this.user = this.auth.getUser;
 
     if (this.user)
-      this.bookmarks$ = this.storage
-        .getObsDocs(`${this.user.email}-bookmarks`)
-        .subscribe((news: any) => {
-          this.items = news;
-        });
+      this.bookmarks$ = this.news.getObsBookmarks().subscribe((news) => {
+        this.items = news;
+      });
   }
 
   ngOnDestroy() {

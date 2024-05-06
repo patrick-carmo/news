@@ -1,7 +1,17 @@
-.padding-right {
-  padding-right: 15px;
+ion-img {
+  cursor: pointer;
 }
 
-.padding-button {
-  padding: 10px 0;
+ion-buttons {
+  display: inline-block;
+
+  margin: 10px 0px;
+
+  position: relative;
+
+  div {
+    display: flex;
+    position: absolute;
+    right: 130px;
+  }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -36,7 +36,6 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { UtilsService } from 'src/app/services/utils.service';
-import { StorageService } from 'src/app/services/storage.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { Subscription } from 'rxjs';
 import { News, User } from 'src/app/interfaces/interfaces';
@@ -82,11 +81,10 @@ import { News, User } from 'src/app/interfaces/interfaces';
     IonRefresherContent,
   ],
 })
-export class HomePage implements OnInit, OnDestroy {
+export class HomePage implements OnDestroy {
   private news = inject(NewsService);
   private utils = inject(UtilsService);
   private auth = inject(AuthService);
-  private storage = inject(StorageService);
 
   protected user: User | null = null;
   protected bookmarks$: Subscription | undefined;
@@ -103,20 +101,16 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor() {
     this.user = this.auth.getUser;
-  }
 
-  async ngOnInit() {
     if (this.user && !this.bookmarks$)
-      this.bookmarks$ = this.storage
-        .getObsDocs(`${this.user.email}-bookmarks`)
-        .subscribe((news: any) => {
-          this.bookmarks = news;
-          if (this.items.length === 0) this.generateItems();
+      this.bookmarks$ = this.news.getObsBookmarks().subscribe((news: any) => {
+        this.bookmarks = news;
+        if (this.items.length === 0) this.generateItems();
 
-          this.items.forEach((item: News) => {
-            item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
-          });
+        this.items.forEach((item: News) => {
+          item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
         });
+      });
   }
 
   ngOnDestroy() {
@@ -150,10 +144,12 @@ export class HomePage implements OnInit, OnDestroy {
         this.page++;
       },
       () => {
-        this.utils.toastMessage({
-          message: 'Erro ao carregar notícias',
-          color: 'danger',
-        });
+        this.utils
+          .toastMessage({
+            message: 'Erro ao carregar notícias',
+            color: 'danger',
+          })
+          .catch(() => console.error('Error'));
       }
     );
   }
@@ -168,32 +164,40 @@ export class HomePage implements OnInit, OnDestroy {
 
     this.inSearch = true;
 
-    this.news.searchNews(this.qtyItems, this.searchPage, query).subscribe(
-      (data: any) => {
-        const items = this.formatItems(data);
-        this.searchItems[arrayMethod](...items);
-        this.searchPage++;
+    try {
+      this.news.searchNews(this.qtyItems, this.searchPage, query).subscribe(
+        async (data: any) => {
+          const items = this.formatItems(data);
+          this.searchItems[arrayMethod](...items);
+          this.searchPage++;
 
-        if (items.length === 0)
-          this.utils.toastMessage({
-            message: 'Nenhuma notícia encontrada',
-            color: 'warning',
-          });
-      },
-      () =>
-        this.utils.toastMessage({
+          if (!items.length)
+            await this.utils.toastMessage({
+              message: 'Nenhuma notícia encontrada',
+              color: 'warning',
+            });
+        },
+        () =>
+          this.utils
+            .toastMessage({
+              message: 'Erro ao buscar notícias',
+              color: 'danger',
+            })
+            .catch(() => console.error('Error'))
+      );
+    } catch {
+      this.utils
+        .toastMessage({
           message: 'Erro ao buscar notícias',
           color: 'danger',
         })
-    );
+        .catch(() => console.error('Error'));
+    }
   }
 
   protected onIonInfinite(ev: any, search: boolean = false) {
-    if (search) {
-      this.search('push');
-    } else {
-      this.generateItems(this.page);
-    }
+    search ? this.search('push') : this.generateItems(this.page);
+
     setTimeout(() => {
       (
         (ev as InfiniteScrollCustomEvent).target as HTMLIonInfiniteScrollElement

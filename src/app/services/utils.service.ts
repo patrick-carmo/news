@@ -19,23 +19,24 @@ export class UtilsService {
 
   constructor() {}
 
-  async alertMessage(fields: AlertOptions) {
+  alertMessage(fields: AlertOptions) {
     const { header, subHeader, message, buttons } = fields;
 
-    const alert = await this.alertController.create({
-      header,
-      subHeader,
-      message,
-      buttons,
-    });
-
-    await alert.present();
+    this.alertController
+      .create({
+        header,
+        subHeader,
+        message,
+        buttons,
+      })
+      .then((alert) => alert.present())
+      .catch((error) => console.error(error));
   }
 
   async toastMessage(fields: ToastOptions) {
     const { header, message, color, buttons } = fields;
 
-    const toastMessage = await this.toast.create({
+    const toast = await this.toast.create({
       header,
       message,
       color,
@@ -44,7 +45,7 @@ export class UtilsService {
       duration: 4000,
     });
 
-    await toastMessage.present();
+    await toast.present();
   }
 
   async showLoading(message: string = 'Enviando...') {
