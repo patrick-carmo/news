@@ -27,12 +27,13 @@ import {
   IonButton,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/components/header/header.component';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth/auth.service';
 import { addIcons } from 'ionicons';
 import { fingerPrintOutline } from 'ionicons/icons';
-import { StorageService } from 'src/app/services/storage.service';
+import { StorageService } from 'src/app/services/storage/storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { User } from 'src/app/interfaces/interfaces';
+import { UserPreferencesService } from 'src/app/services/storage/user-preferences.service';
 
 @Component({
   selector: 'app-profile',
@@ -70,10 +71,10 @@ import { User } from 'src/app/interfaces/interfaces';
 })
 export class ProfilePage {
   private auth = inject(AuthService);
-  private storage = inject(StorageService);
+  private userPrefService = inject(UserPreferencesService);
   private utils = inject(UtilsService);
 
-  protected user: User | null;
+  protected user: User | null = null;
   protected hasBiometry: boolean = false;
   protected isNative: boolean = this.auth.isNative;
   protected loginWithEmail: boolean = false;
@@ -82,22 +83,23 @@ export class ProfilePage {
     addIcons({
       fingerPrintOutline,
     });
-
-    this.user = this.auth.getUser;
-
-    this.storage.getBiometricPreferences().then((hasBiometry: boolean) => {
+    this.userPrefService.getBiometricPreferences().then((hasBiometry: boolean) => {
       this.hasBiometry = hasBiometry;
     });
 
-    this.storage.getLoginType().then((loginType: string) => {
+    this.userPrefService.getLoginType().then((loginType: string) => {
       this.loginWithEmail = loginType === 'email';
     });
+  }
+
+  ionViewWillEnter() {
+    this.user = this.auth.getUser;
   }
 
   protected async biometry(event: any) {
     try {
       this.hasBiometry = event.detail.checked;
-      await this.storage.setBiometricPreferences(this.hasBiometry);
+      await this.userPrefService.setBiometricPreferences(this.hasBiometry);
     } catch {
       this.utils.toastMessage({
         message: `Erro ao salvar preferência de biometria.`,

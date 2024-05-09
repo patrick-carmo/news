@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate } from '@angular/router';
 import { AuthService } from './auth.service';
 import { take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +20,7 @@ export class AuthGuardService implements CanActivate {
         return true;
       }
 
-      const authState = await this.auth.authState.pipe(take(1)).toPromise();
+      const authState = await firstValueFrom(this.auth.authState);
 
       if (authState) {
         return true;

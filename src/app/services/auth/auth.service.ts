@@ -1,14 +1,14 @@
+import { UserPreferencesService } from './../storage/user-preferences.service';
 import { Injectable, OnDestroy, inject } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
-import { firebaseError } from '../utils/errorFirebase';
+import { firebaseError } from '../../utils/errorFirebase';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { Capacitor } from '@capacitor/core';
-import { StorageService } from './storage.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import firebase from 'firebase/compat/app';
 import { Subscription } from 'rxjs';
-import { UtilsService } from './utils.service';
+import { UtilsService } from '../utils.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ import { UtilsService } from './utils.service';
 export class AuthService implements OnDestroy {
   router = inject(Router);
   private auth = inject(AngularFireAuth);
-  private storage = inject(StorageService);
+  private userPrefService = inject(UserPreferencesService);
   private utils = inject(UtilsService);
 
   isNative: boolean = Capacitor.getPlatform() !== 'web';
@@ -30,9 +30,10 @@ export class AuthService implements OnDestroy {
       scopes: ['profile', 'email'],
       grantOfflineAccess: true,
     });
-    this.userState$ = this.auth.authState.subscribe(
-      (user) => (this.user = user)
-    );
+
+    this.userState$ = this.auth.authState.subscribe((user) => {
+      this.user = user;
+    });
   }
 
   ngOnDestroy(): void {
@@ -53,7 +54,7 @@ export class AuthService implements OnDestroy {
 
       if (!result.isAvailable) return 'Biometria não disponível';
 
-      const credentials = await this.storage.getBiometricCredentials();
+      const credentials = await this.userPrefService.getBiometricCredentials();
       if (typeof credentials === 'string') return credentials;
 
       const { username, password } = credentials;
@@ -88,8 +89,8 @@ export class AuthService implements OnDestroy {
       user.sendEmailVerification();
 
       if (this.isNative) {
-        await this.storage.resetBiometricCredentials();
-        await this.storage.setBiometricPreferences(false);
+        await this.userPrefService.resetBiometricCredentials();
+        await this.userPrefService.setBiometricPreferences(false);
       }
 
       return;
@@ -110,17 +111,20 @@ export class AuthService implements OnDestroy {
         return 'Verifique seu e-mail para autenticar.';
       }
 
+      await this.userPrefService.setUser(user);
+
       if (this.isNative) {
-        await this.storage.setBiometricCredentials({
+        await this.userPrefService.setBiometricCredentials({
           username: email,
           password,
         });
       }
 
-      await this.storage.setLoginType('email');
+      await this.userPrefService.setLoginType('email');
 
       return;
     } catch (error) {
+      console.log(error);
       return firebaseError(error);
     }
   }
@@ -138,8 +142,8 @@ export class AuthService implements OnDestroy {
 
       if (!user) return 'Erro interno do servidor';
 
-      await this.storage.setLoginType('google');
-      await this.storage.setBiometricPreferences(false);
+      await this.userPrefService.setLoginType('google');
+      await this.userPrefService.setBiometricPreferences(false);
 
       const { displayName: name, email } = user;
 
@@ -180,8 +184,8 @@ export class AuthService implements OnDestroy {
     try {
       await this.auth.sendPasswordResetEmail(email);
 
-      if (this.isNative) await this.storage.resetBiometricCredentials();
-      await this.storage.setBiometricPreferences(false);
+      if (this.isNative) await this.userPrefService.resetBiometricCredentials();
+      await this.userPrefService.setBiometricPreferences(false);
 
       return;
     } catch (error) {
@@ -196,9 +200,10 @@ export class AuthService implements OnDestroy {
       if (user) await user.updatePassword(password);
 
       if (this.isNative) {
-        const credentials = await this.storage.getBiometricCredentials();
+        const credentials =
+          await this.userPrefService.getBiometricCredentials();
         if (typeof credentials !== 'string') {
-          await this.storage.setBiometricCredentials({
+          await this.userPrefService.setBiometricCredentials({
             email: credentials.username,
             password,
           });
@@ -217,9 +222,10 @@ export class AuthService implements OnDestroy {
       user?.updateEmail(email);
 
       if (this.isNative) {
-        const credentials = await this.storage.getBiometricCredentials();
+        const credentials =
+          await this.userPrefService.getBiometricCredentials();
         if (typeof credentials !== 'string')
-          await this.storage.setBiometricCredentials({
+          await this.userPrefService.setBiometricCredentials({
             email,
             password: credentials.password,
           });

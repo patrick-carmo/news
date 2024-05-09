@@ -26,7 +26,7 @@ import {
   IonItem,
   IonCard,
 } from '@ionic/angular/standalone';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth/auth.service';
 import { addIcons } from 'ionicons';
 import {
   addCircleOutline,
@@ -37,10 +37,10 @@ import {
   logInOutline,
   logoGoogle,
 } from 'ionicons/icons';
-import { StorageService } from 'src/app/services/storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthForm } from 'src/app/interfaces/interfaces';
 import { ResetPasswordComponent } from 'src/app/components/reset-password/reset-password.component';
+import { UserPreferencesService } from 'src/app/services/storage/user-preferences.service';
 
 @Component({
   selector: 'app-login',
@@ -72,7 +72,7 @@ import { ResetPasswordComponent } from 'src/app/components/reset-password/reset-
 })
 export class LoginPage {
   private auth = inject(AuthService);
-  private storage = inject(StorageService);
+  private userPrefService = inject(UserPreferencesService);
   private menu = inject(MenuController);
   private modalCtrl = inject(ModalController);
   private utils = inject(UtilsService);
@@ -117,7 +117,7 @@ export class LoginPage {
 
   ionViewWillEnter() {
     this.menu.enable(false);
-    this.storage.getBiometricPreferences().then((biometry) => {
+    this.userPrefService.getBiometricPreferences().then((biometry) => {
       this.hasBiometry = biometry;
     });
   }

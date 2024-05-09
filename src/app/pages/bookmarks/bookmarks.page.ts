@@ -12,11 +12,11 @@ import {
 } from '@ionic/angular/standalone';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { HeaderComponent } from 'src/app/components/header/header.component';
-import { StorageService } from 'src/app/services/storage.service';
-import { AuthService } from 'src/app/services/auth.service';
+import { StorageService } from 'src/app/services/storage/storage.service';
+import { AuthService } from 'src/app/services/auth/auth.service';
 import { Subscription } from 'rxjs';
 import { News, User } from 'src/app/interfaces/interfaces';
-import { NewsService } from 'src/app/services/news.service';
+import { NewsService } from 'src/app/services/news/news.service';
 
 @Component({
   selector: 'app-bookmarks',
@@ -42,23 +42,25 @@ export class BookmarksPage implements OnDestroy {
   private news = inject(NewsService);
 
   protected items: News[] = [];
-  private user: User | null = null;
   protected searchItems: News[] = [];
   protected inSearch: boolean = false;
   protected query: string = '';
 
+  private user$: Subscription | undefined;
   protected bookmarks$: Subscription | undefined;
 
   constructor() {
-    this.user = this.auth.getUser;
-
-    if (this.user)
-      this.bookmarks$ = this.news.getObsBookmarks().subscribe((news) => {
-        this.items = news;
-      });
+    this.user$ = this.auth.authState.subscribe((user) => {
+      if (user) {
+        this.bookmarks$ = this.news.getObsBookmarks().subscribe((news) => {
+          this.items = news;
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
+    this.user$?.unsubscribe();
     this.bookmarks$?.unsubscribe();
   }
 

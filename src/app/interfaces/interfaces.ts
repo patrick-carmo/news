@@ -1,4 +1,5 @@
 import { FormControl } from '@angular/forms';
+import { Timestamp } from 'firebase/firestore';
 
 export interface News {
   id: number;
@@ -8,6 +9,14 @@ export interface News {
   date: string;
   image: string;
   saved?: boolean;
+}
+
+export interface Comment {
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  content: string;
+  date: Date | string;
 }
 
 export interface User {

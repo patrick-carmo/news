@@ -1,76 +1,31 @@
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Injectable, inject } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
-import { News, User } from '../interfaces/interfaces';
+import { User } from 'src/app/interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
-export class StorageService {
+export class UserPreferencesService {
   private firestore = inject(AngularFirestore);
+
   private server = import.meta.env['NG_APP_SERVER'];
 
   constructor() {}
 
-  getBookmarks(user: User) {
-    return this.firestore
-      .collection('users')
-      .doc(user.email as string)
-      .collection('bookmarks')
-      .valueChanges();
+  getUser(uid: string) {
+    return this.firestore.collection('users').doc(uid).valueChanges();
   }
 
-  getBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.email as string)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .get()
-  }
+  setUser(user: User) {
+    const { email, displayName, photoURL, uid } = user;
 
-  setBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.email as string)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .set(data);
-  }
-
-  delBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.email as string)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .delete();
-  }
-
-  getComments(data: News) {
-    return this.firestore
-      .collection('posts')
-      .doc(data.id.toString())
-      .collection('comments')
-      .valueChanges();
-  }
-
-  setComments(data: News, comment: any) {
-    return this.firestore
-      .collection('posts')
-      .doc(data.id.toString())
-      .collection('comments')
-      .add(comment);
-  }
-
-  delComments(data: News, comment: any) {
-    return this.firestore
-      .collection('posts')
-      .doc(data.id.toString())
-      .collection('comments')
-      .doc(comment.id)
-      .delete();
+    return this.firestore.collection('users').doc(uid).set({
+      email,
+      displayName,
+      photoURL,
+    });
   }
 
   async getStorage(key: string) {

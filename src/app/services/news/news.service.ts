@@ -1,40 +1,45 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy, inject } from '@angular/core';
-import { StorageService } from './storage.service';
-import { UtilsService } from './utils.service';
+import { StorageService } from '../storage/storage.service';
+import { UtilsService } from '../utils.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, Subscription, firstValueFrom } from 'rxjs';
-import { News, User } from '../interfaces/interfaces';
+import { News, User } from '../../interfaces/interfaces';
+import { BookmarksService } from '../storage/bookmarks.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NewsService implements OnDestroy {
   private http = inject(HttpClient);
-  private storage = inject(StorageService);
+  private bookmarksService = inject(BookmarksService);
   private utils = inject(UtilsService);
   private auth = inject(AuthService);
 
-  private user: User | null;
+  private user: User | undefined;
+  private user$: Subscription | undefined;
   private bookmarks$ = new BehaviorSubject<News[]>([]);
   private bookmarksSub$: Subscription | undefined;
 
   constructor() {
-    this.user = this.auth.getUser;
+    this.user$ = this.auth.authState.subscribe((user) => {
+      if (user) {
+        this.user = user;
 
-    if (this.user) {
-      this.bookmarksSub$ = this.storage
-        .getBookmarks(this.user)
-        .subscribe((news: any) => {
-          this.bookmarks$.next(news);
-        });
-    }
+        this.bookmarksSub$ = this.bookmarksService
+          .getBookmarks(this.user)
+          .subscribe((news: any) => {
+            this.bookmarks$.next(news);
+          });
+      }
+    });
   }
 
   ngOnDestroy() {
+    this.user$?.unsubscribe();
     this.bookmarksSub$?.unsubscribe();
   }
 
@@ -57,16 +62,16 @@ export class NewsService implements OnDestroy {
   async toggleBookmarksStorage(news: News) {
     if (this.user) {
       const doc = await firstValueFrom(
-        this.storage.getBookmark(this.user, news)
+        this.bookmarksService.getBookmark(this.user, news)
       );
 
       if (doc.exists) {
-        await this.storage.delBookmark(this.user, news);
+        await this.bookmarksService.delBookmark(this.user, news);
         return false;
       }
 
       news.saved = true;
-      await this.storage.setBookmark(this.user, news);
+      await this.bookmarksService.setBookmark(this.user, news);
       return true;
     }
 

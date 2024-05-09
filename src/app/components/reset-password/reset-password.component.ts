@@ -18,8 +18,9 @@ import {
   IonButton,
   IonText,
   IonIcon,
+  IonButtons,
 } from '@ionic/angular/standalone';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -27,6 +28,7 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./reset-password.component.scss'],
   standalone: true,
   imports: [
+    IonButtons,
     IonIcon,
     ReactiveFormsModule,
     CommonModule,

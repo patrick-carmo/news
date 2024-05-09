@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { AuthGuardService } from './services/auth-guard.service';
+import { AuthGuardService } from './services/auth/auth-guard.service';
 
 export const routes: Routes = [
   {
@@ -28,7 +28,7 @@ export const routes: Routes = [
   {
     path: 'bookmarks',
     canActivate: [AuthGuardService],
-    loadComponent: () => import('./pages/bookmarks/bookmarks.page').then( m => m.BookmarksPage)
+    loadComponent: () =>
+      import('./pages/bookmarks/bookmarks.page').then((m) => m.BookmarksPage),
   },
-
 ];

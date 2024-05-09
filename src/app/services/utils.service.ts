@@ -12,53 +12,68 @@ import {
 })
 export class UtilsService {
   private toast = inject(ToastController);
-  private loadingControler = inject(LoadingController);
-  private alertController = inject(AlertController);
+  private loadingCtrl = inject(LoadingController);
+  private alertCtrl = inject(AlertController);
 
   private loading: any;
 
   constructor() {}
 
-  alertMessage(fields: AlertOptions) {
-    const { header, subHeader, message, buttons } = fields;
+  async alertMessage(fields: AlertOptions) {
+    try {
+      const { header, subHeader, message, buttons } = fields;
 
-    this.alertController
-      .create({
+      const alert = await this.alertCtrl.create({
         header,
         subHeader,
         message,
-        buttons,
-      })
-      .then((alert) => alert.present())
-      .catch((error) => console.error(error));
+        buttons: buttons || ['OK'],
+      });
+
+      await alert.present();
+    } catch {
+      console.error('Erro ao exibir alerta!');
+    }
   }
 
   async toastMessage(fields: ToastOptions) {
-    const { header, message, color, buttons } = fields;
+    try {
+      const { header, message, color, buttons } = fields;
 
-    const toast = await this.toast.create({
-      header,
-      message,
-      color,
-      buttons,
-      swipeGesture: 'vertical',
-      duration: 4000,
-    });
+      const toast = await this.toast.create({
+        header,
+        message,
+        color,
+        buttons,
+        swipeGesture: 'vertical',
+        duration: 4000,
+      });
 
-    await toast.present();
+      await toast.present();
+    } catch {
+      console.error('Erro ao exibir toast!');
+    }
   }
 
   async showLoading(message: string = 'Enviando...') {
-    this.loading = await this.loadingControler.create({
-      message,
-    });
+    try {
+      this.loading = await this.loadingCtrl.create({
+        message,
+      });
 
-    await this.loading.present();
+      await this.loading.present();
+    } catch {
+      console.error('Erro ao exibir loading!');
+    }
   }
 
   async dimisLoading() {
-    if (this.loading) {
-      await this.loading.dismiss();
+    try {
+      if (this.loading) {
+        await this.loading.dismiss();
+      }
+    } catch {
+      console.error('Erro ao fechar loading!');
     }
   }
 }

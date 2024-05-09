@@ -31,7 +31,7 @@ import {
   thumbsUpOutline,
 } from 'ionicons/icons';
 import { News } from 'src/app/interfaces/interfaces';
-import { NewsService } from 'src/app/services/news.service';
+import { NewsService } from 'src/app/services/news/news.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { CommentsComponent } from '../comments/comments.component';
 
@@ -82,11 +82,14 @@ export class NewsItemsComponent {
     });
   }
 
-  protected async openComments() {
+  protected async openComments(news: News) {
     const modal = await this.modalCtrl.create({
       component: CommentsComponent,
       breakpoints: [0, 0.4, 1],
-      initialBreakpoint: 0.8,
+      initialBreakpoint: 1,
+      componentProps: {
+        news,
+      },
     });
     await modal.present();
   }

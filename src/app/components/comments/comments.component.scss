@@ -1,7 +1,19 @@
 ion-item{
-  display: flex;
-
   ion-avatar{
     align-self: start;
+  }
+}
+
+.flex{
+  display: flex;
+  justify-content: center;
+
+  position: relative;
+
+  .floating{
+    position: absolute;
+    right: 4px;
+    top: 10px;
+    z-index: 2;
   }
 }

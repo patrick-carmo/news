@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -31,12 +31,12 @@ import {
   IonRefresherContent,
   IonInput,
 } from '@ionic/angular/standalone';
-import { NewsService } from 'src/app/services/news.service';
+import { NewsService } from 'src/app/services/news/news.service';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { UtilsService } from 'src/app/services/utils.service';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth/auth.service';
 import { Subscription } from 'rxjs';
 import { News, User } from 'src/app/interfaces/interfaces';
 
@@ -86,7 +86,7 @@ export class HomePage implements OnDestroy {
   private utils = inject(UtilsService);
   private auth = inject(AuthService);
 
-  protected user: User | null = null;
+  protected user$: Subscription | undefined;
   protected bookmarks$: Subscription | undefined;
   protected bookmarks: News[] = [];
   protected items: News[] = [];
@@ -100,20 +100,22 @@ export class HomePage implements OnDestroy {
   private searchPage: number = 1;
 
   constructor() {
-    this.user = this.auth.getUser;
+    this.user$ = this.auth.authState.subscribe((user: any) => {
+      if (user) {
+        this.bookmarks$ = this.news.getObsBookmarks().subscribe((news: any) => {
+          this.bookmarks = news;
+          if (this.items.length === 0) this.generateItems();
 
-    if (this.user && !this.bookmarks$)
-      this.bookmarks$ = this.news.getObsBookmarks().subscribe((news: any) => {
-        this.bookmarks = news;
-        if (this.items.length === 0) this.generateItems();
-
-        this.items.forEach((item: News) => {
-          item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
+          this.items.forEach((item: News) => {
+            item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
+          });
         });
-      });
+      }
+    });
   }
 
   ngOnDestroy() {
+    this.user$?.unsubscribe();
     this.bookmarks$?.unsubscribe();
   }
 

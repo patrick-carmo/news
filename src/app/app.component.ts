@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   IonApp,
@@ -28,8 +28,8 @@ import {
   newspaperOutline,
   personCircleOutline,
 } from 'ionicons/icons';
-import { AuthService } from './services/auth.service';
-import { Observable, Subscription } from 'rxjs';
+import { AuthService } from './services/auth/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
