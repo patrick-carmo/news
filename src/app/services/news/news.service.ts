@@ -1,14 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy, inject } from '@angular/core';
-import { StorageService } from '../storage/storage.service';
 import { UtilsService } from '../utils.service';
 import { Share } from '@capacitor/share';
 import { Clipboard } from '@capacitor/clipboard';
 import { Browser } from '@capacitor/browser';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject, Subscription, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Subscription, firstValueFrom, map } from 'rxjs';
 import { News, User } from '../../interfaces/interfaces';
-import { BookmarksService } from '../storage/bookmarks.service';
+import { BookmarksService } from '../storage/news/bookmarks.service';
 
 @Injectable({
   providedIn: 'root',
@@ -48,9 +47,32 @@ export class NewsService implements OnDestroy {
   }
 
   getNews(qtd: number = 10, page: number = 1) {
-    return this.http.get<News[]>(
-      `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}`
-    );
+    return this.http
+      .get<any[]>(
+        `https://servicodados.ibge.gov.br/api/v3/noticias/?qtd=${qtd}&page=${page}`
+      )
+      .pipe(
+        map((data: any) =>
+          data.items.map((news: any) => {
+            const images = JSON.parse(news.imagens);
+
+            const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
+
+            return {
+              id: news.id,
+              title: news.titulo,
+              date: news.data_publicacao
+                ? news.data_publicacao.substring(0, 10)
+                : '',
+              intro: news.introducao,
+              image: imageLink,
+              link: news.link,
+              saved: false,
+              likes: 0,
+            };
+          })
+        )
+      );
   }
 
   searchNews(qtd: number = 10, page: number = 1, query: string) {

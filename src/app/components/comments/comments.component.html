@@ -11,14 +11,28 @@
     <ion-text class="ion-margin" *ngIf="!comments.length">Sem comentários no momento</ion-text>
 
     <ion-list *ngIf="comments.length">
-      <ion-item *ngFor="let comment of comments">
+      <ion-item *ngFor="let comment of formattedComments">
         <ion-avatar slot="start">
           <img src="{{comment.photoURL ?? 'https://ionicframework.com/docs/img/demos/avatar.svg'}}" />
         </ion-avatar>
         <ion-label>
           <h2>{{comment.displayName ?? comment.email}}</h2>
-          <p>{{comment.content}}</p>
-          <p>{{comment.date}}</p>
+          <p class="ion-text-wrap">{{comment.content}}</p>
+          <p>{{comment.formattedDate}}</p>
+
+          @if(comment.userId === userId){
+          <div>
+            <ion-button fill="clear" shape="round" size="small" color="primary" (click)="updateComment(comment)">
+              Editar
+              <ion-icon slot="icon-only" name="create-outline" size="small" slot="end"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" shape="round" size="small" color="danger" (click)="delComment(comment)">
+              Excluir
+              <ion-icon slot="icon-only" name="trash-outline" size="small" slot="end"></ion-icon>
+            </ion-button>
+          </div>
+          }
+
         </ion-label>
       </ion-item>
     </ion-list>

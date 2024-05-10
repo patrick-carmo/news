@@ -36,7 +36,7 @@ export class AuthService implements OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.userState$?.unsubscribe();
   }
 
@@ -124,7 +124,6 @@ export class AuthService implements OnDestroy {
 
       return;
     } catch (error) {
-      console.log(error);
       return firebaseError(error);
     }
   }
@@ -158,6 +157,8 @@ export class AuthService implements OnDestroy {
         if (email) await this.auth.sendPasswordResetEmail(email);
       }
 
+      await this.userPrefService.setUser(user);
+
       return;
     } catch (error: any) {
       const message = 'Autenticação com foi Google cancelada';
@@ -177,6 +178,7 @@ export class AuthService implements OnDestroy {
 
   async signOut() {
     await this.auth.signOut();
+    this.ngOnDestroy();
     this.router.navigate(['/login']);
   }
 

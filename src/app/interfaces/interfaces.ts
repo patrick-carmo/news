@@ -1,5 +1,5 @@
+import { DocumentData } from '@angular/fire/compat/firestore';
 import { FormControl } from '@angular/forms';
-import { Timestamp } from 'firebase/firestore';
 
 export interface News {
   id: number;
@@ -9,14 +9,22 @@ export interface News {
   date: string;
   image: string;
   saved?: boolean;
+  liked?: boolean;
+  likes: number | DocumentData[];
 }
 
 export interface Comment {
+  id: string;
+  userId: string;
+  content: string;
+  date: Date;
+}
+
+export interface FormattedComment extends Comment {
   email: string;
   displayName?: string;
   photoURL?: string;
-  content: string;
-  date: Date | string;
+  formattedDate: string;
 }
 
 export interface User {
@@ -26,6 +34,10 @@ export interface User {
   photoURL: string | null;
   providerId: string;
   uid: string;
+}
+
+export interface Likes extends User {
+  date: string;
 }
 
 export interface AuthForm {

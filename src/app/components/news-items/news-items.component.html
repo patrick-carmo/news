@@ -11,12 +11,14 @@
     </ion-card-content>
 
     <ion-buttons class="ion-justify-content-center">
+      @if(!isBookmarksPage){
       <div>
-        <ion-button shape="round">0</ion-button>
-        <ion-button shape="round">
-          <ion-icon name="thumbs-up-outline"></ion-icon>
+        <ion-button shape="round" (click)="showLikes(item)">{{item.likes}}</ion-button>
+        <ion-button shape="round" (click)="toggleLike(item)" [color]="item.liked ? 'primary' : 'medium'">
+          <ion-icon [name]="item.liked ? 'thumbs-up' : 'thumbs-up-outline'"></ion-icon>
         </ion-button>
       </div>
+      }
       <ion-button shape="round" color="primary" fill="solid" (click)="openComments(item)">Comentários</ion-button>
     </ion-buttons>
 

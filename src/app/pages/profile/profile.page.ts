@@ -30,7 +30,6 @@ import { HeaderComponent } from 'src/app/components/header/header.component';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { addIcons } from 'ionicons';
 import { fingerPrintOutline } from 'ionicons/icons';
-import { StorageService } from 'src/app/services/storage/storage.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { User } from 'src/app/interfaces/interfaces';
 import { UserPreferencesService } from 'src/app/services/storage/user-preferences.service';

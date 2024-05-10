@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -37,8 +37,10 @@ import { FormsModule } from '@angular/forms';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { UtilsService } from 'src/app/services/utils.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
-import { Subscription } from 'rxjs';
-import { News, User } from 'src/app/interfaces/interfaces';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { News } from 'src/app/interfaces/interfaces';
+import { LikesService } from 'src/app/services/storage/news/likes.service';
+import { DocumentData } from '@angular/fire/compat/firestore';
 
 @Component({
   selector: 'app-home',
@@ -85,11 +87,16 @@ export class HomePage implements OnDestroy {
   private news = inject(NewsService);
   private utils = inject(UtilsService);
   private auth = inject(AuthService);
+  private likeService = inject(LikesService);
 
   protected user$: Subscription | undefined;
   protected bookmarks$: Subscription | undefined;
   protected bookmarks: News[] = [];
   protected items: News[] = [];
+
+  private userLikes$: Subscription | undefined;
+  private userLikes: DocumentData[] = [];
+
   private page: number = 1;
   private readonly qtyItems: number = 15;
 
@@ -102,58 +109,91 @@ export class HomePage implements OnDestroy {
   constructor() {
     this.user$ = this.auth.authState.subscribe((user: any) => {
       if (user) {
-        this.bookmarks$ = this.news.getObsBookmarks().subscribe((news: any) => {
-          this.bookmarks = news;
-          if (this.items.length === 0) this.generateItems();
+        this.userLikes$ = this.likeService
+          .getUserLikes(user)
+          .subscribe((likes) => {
+            this.userLikes = likes;
 
-          this.items.forEach((item: News) => {
-            item.saved = this.bookmarks.some((doc: any) => doc.id === item.id);
+            this.items.forEach((item: News) => {
+              item.liked = likes.some((doc: any) => {
+                return doc.newsId === item.id;
+              });
+            });
           });
-        });
+
+        this.bookmarks$ = this.news
+          .getObsBookmarks()
+          .subscribe(async (news: any) => {
+            this.bookmarks = news;
+            if (this.items.length === 0) await this.generateItems();
+
+            this.items.forEach((item: News) => {
+              item.saved = this.bookmarks.some(
+                (doc: any) => doc.id === item.id
+              );
+            });
+          });
       }
     });
   }
 
   ngOnDestroy() {
-    this.user$?.unsubscribe();
     this.bookmarks$?.unsubscribe();
+    this.user$?.unsubscribe();
+    this.userLikes$?.unsubscribe();
   }
 
-  private formatItems(data: any): News[] {
-    return data.items.map((item: any) => {
-      const images = JSON.parse(item.imagens);
-      const imageLink = `https://agenciadenoticias.ibge.gov.br/${images.image_intro}`;
+  private async formatItems(data: any) {
+    const returl = data.map(async (item: any) => {
+      const likes = await firstValueFrom(this.likeService.getLikes(item));
+
+      item.likes = likes.length;
+
+      item.liked = likes.some((doc: any) => {
+        return doc.userId === this.auth.getUser?.uid;
+      });
+
       return {
-        id: item.id,
-        title: item.titulo,
-        intro: item.introducao,
-        date: item.data_publicacao ? item.data_publicacao.substring(0, 10) : '',
-        image: imageLink,
-        link: item.link,
+        ...item,
         saved: this.bookmarks.some((doc: any) => doc.id === item.id),
       };
     });
+
+    const result = await Promise.all(returl);
+    return result;
   }
 
-  private generateItems(
+  private async generateItems(
     page: number = 1,
     arrayMethod: 'push' | 'unshift' = 'push'
   ) {
-    this.news.getNews(this.qtyItems, page).subscribe(
-      (data: any) => {
-        const items = this.formatItems(data);
-        this.items[arrayMethod](...items);
-        this.page++;
-      },
-      () => {
-        this.utils
-          .toastMessage({
-            message: 'Erro ao carregar notícias',
-            color: 'danger',
-          })
-          .catch(() => console.error('Error'));
-      }
-    );
+    try {
+      this.news.getNews(this.qtyItems, page).subscribe(
+        async (data) => {
+          const news = data as unknown as News[];
+          const items = await this.formatItems(news);
+
+          this.items[arrayMethod](...items);
+
+          this.page++;
+        },
+        () => {
+          this.utils
+            .toastMessage({
+              message: 'Erro ao carregar notícias',
+              color: 'danger',
+            })
+            .catch(() => console.error('Error'));
+        }
+      );
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao carregar notícias',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 
   protected search(arrayMethod: 'push' | 'unshift' = 'unshift') {
@@ -169,7 +209,7 @@ export class HomePage implements OnDestroy {
     try {
       this.news.searchNews(this.qtyItems, this.searchPage, query).subscribe(
         async (data: any) => {
-          const items = this.formatItems(data);
+          const items = await this.formatItems(data);
           this.searchItems[arrayMethod](...items);
           this.searchPage++;
 

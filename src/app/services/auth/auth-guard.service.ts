@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { CanActivate } from '@angular/router';
 import { AuthService } from './auth.service';
-import { take } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -15,14 +14,14 @@ export class AuthGuardService implements CanActivate {
     try {
       const user = this.auth.getUser;
 
-      if (user) {
+      if (user && user.emailVerified) {
         this.auth.refreshToken(user);
         return true;
       }
 
       const authState = await firstValueFrom(this.auth.authState);
 
-      if (authState) {
+      if (authState && authState.emailVerified) {
         return true;
       }
 

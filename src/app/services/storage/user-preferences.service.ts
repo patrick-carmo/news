@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
+import { map } from 'rxjs';
 import { User } from 'src/app/interfaces/interfaces';
 
 @Injectable({
@@ -15,13 +16,25 @@ export class UserPreferencesService {
   constructor() {}
 
   getUser(uid: string) {
-    return this.firestore.collection('users').doc(uid).valueChanges();
+    return this.firestore
+      .collection('users')
+      .doc(uid)
+      .get()
+      .pipe(map((user) => user.data()));
+  }
+
+  getUsers(userIds: string[]) {
+    return this.firestore
+      .collection('users', (ref) => ref.where('uid', 'in', userIds))
+      .get()
+      .pipe(map((users) => users.docs.map((user) => user.data())));
   }
 
   setUser(user: User) {
     const { email, displayName, photoURL, uid } = user;
 
     return this.firestore.collection('users').doc(uid).set({
+      uid,
       email,
       displayName,
       photoURL,

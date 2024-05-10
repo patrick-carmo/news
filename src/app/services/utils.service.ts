@@ -21,10 +21,11 @@ export class UtilsService {
 
   async alertMessage(fields: AlertOptions) {
     try {
-      const { header, subHeader, message, buttons } = fields;
+      const { header, subHeader, message, buttons, inputs } = fields;
 
       const alert = await this.alertCtrl.create({
         header,
+        inputs: inputs || [],
         subHeader,
         message,
         buttons: buttons || ['OK'],

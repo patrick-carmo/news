@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, OnDestroy, inject } from '@angular/core';
 import {
   IonItem,
   IonCard,
@@ -28,12 +28,17 @@ import {
   chevronDownCircleOutline,
   document,
   shareSocialSharp,
+  thumbsUp,
   thumbsUpOutline,
 } from 'ionicons/icons';
 import { News } from 'src/app/interfaces/interfaces';
 import { NewsService } from 'src/app/services/news/news.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { CommentsComponent } from '../comments/comments.component';
+import { AuthService } from 'src/app/services/auth/auth.service';
+import { firstValueFrom } from 'rxjs';
+import { LikesService } from 'src/app/services/storage/news/likes.service';
+import { LikesComponent } from '../likes/likes.component';
 
 @Component({
   selector: 'app-news-items',
@@ -64,6 +69,8 @@ import { CommentsComponent } from '../comments/comments.component';
 export class NewsItemsComponent {
   protected news = inject(NewsService);
   private utils = inject(UtilsService);
+  private auth = inject(AuthService);
+  private likeService = inject(LikesService);
   private modalCtrl = inject(ModalController);
 
   @Input() items: News[] = [];
@@ -79,6 +86,7 @@ export class NewsItemsComponent {
       bookmarkOutline,
       bookmarkSharp,
       thumbsUpOutline,
+      thumbsUp,
     });
   }
 
@@ -92,6 +100,43 @@ export class NewsItemsComponent {
       },
     });
     await modal.present();
+  }
+
+  protected async toggleLike(news: News) {
+    try {
+      const user = this.auth.getUser;
+
+      if (!user)
+        return await this.utils.toastMessage({
+          message: 'Você precisa estar logado para curtir o post',
+          color: 'warning',
+        });
+
+      const like = await firstValueFrom(this.likeService.getLike(news, user));
+
+      const likes = (await firstValueFrom(this.likeService.getLikes(news)))
+        .length;
+
+      if (like.exists) {
+        this.likeService.removeLike(news, user);
+        this.likeService.removeUserLike(news, user);
+        news.liked = false;
+        news.likes = likes - 1;
+        return;
+      }
+
+      await this.likeService.setLike(news, user);
+      await this.likeService.setUserLike(news, user);
+      news.liked = true;
+      news.likes = likes + 1;
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao curtir',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 
   protected async toogleBookmark(item: any) {
@@ -137,6 +182,18 @@ export class NewsItemsComponent {
         })
         .catch(() => console.error('Error'));
     }
+  }
+
+  protected async showLikes(news: News) {
+    const modal = await this.modalCtrl.create({
+      component: LikesComponent,
+      breakpoints: [0, 0.4, 1],
+      initialBreakpoint: 0.8,
+      componentProps: {
+        news,
+      },
+    });
+    await modal.present();
   }
 
   protected getItemIcon(item: any) {

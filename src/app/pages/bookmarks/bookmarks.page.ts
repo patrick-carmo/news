@@ -12,10 +12,9 @@ import {
 } from '@ionic/angular/standalone';
 import { NewsItemsComponent } from 'src/app/components/news-items/news-items.component';
 import { HeaderComponent } from 'src/app/components/header/header.component';
-import { StorageService } from 'src/app/services/storage/storage.service';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { Subscription } from 'rxjs';
-import { News, User } from 'src/app/interfaces/interfaces';
+import { News } from 'src/app/interfaces/interfaces';
 import { NewsService } from 'src/app/services/news/news.service';
 
 @Component({
@@ -60,8 +59,8 @@ export class BookmarksPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.user$?.unsubscribe();
     this.bookmarks$?.unsubscribe();
+    this.user$?.unsubscribe();
   }
 
   protected searchNews() {
