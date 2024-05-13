@@ -178,21 +178,17 @@ export class HomePage implements OnDestroy {
           this.page++;
         },
         () => {
-          this.utils
-            .toastMessage({
-              message: 'Erro ao carregar notícias',
-              color: 'danger',
-            })
-            .catch(() => console.error('Error'));
+          this.utils.toastMessage({
+            message: 'Erro ao carregar notícias',
+            color: 'danger',
+          });
         }
       );
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao carregar notícias',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao carregar notícias',
+        color: 'danger',
+      });
     }
   }
 
@@ -216,24 +212,19 @@ export class HomePage implements OnDestroy {
           if (!items.length)
             await this.utils.toastMessage({
               message: 'Nenhuma notícia encontrada',
-              color: 'warning',
             });
         },
         () =>
-          this.utils
-            .toastMessage({
-              message: 'Erro ao buscar notícias',
-              color: 'danger',
-            })
-            .catch(() => console.error('Error'))
+          this.utils.toastMessage({
+            message: 'Erro ao buscar notícias',
+            color: 'danger',
+          })
       );
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao buscar notícias',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao buscar notícias',
+        color: 'danger',
+      });
     }
   }
 

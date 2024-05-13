@@ -15,7 +15,7 @@ export class UtilsService {
   private loadingCtrl = inject(LoadingController);
   private alertCtrl = inject(AlertController);
 
-  private loading: any;
+  private loading: HTMLIonLoadingElement | null = null;
 
   constructor() {}
 
@@ -33,30 +33,30 @@ export class UtilsService {
 
       await alert.present();
     } catch {
-      console.error('Erro ao exibir alerta!');
+      console.error('Erro ao exibir alerta');
     }
   }
 
   async toastMessage(fields: ToastOptions) {
     try {
-      const { header, message, color, buttons } = fields;
+      const { header, message, duration, color, buttons } = fields;
 
       const toast = await this.toast.create({
         header,
         message,
-        color,
+        color: color || 'warning',
         buttons,
         swipeGesture: 'vertical',
-        duration: 2000,
+        duration: duration ?? 4000,
       });
 
       await toast.present();
     } catch {
-      console.error('Erro ao exibir toast!');
+      console.error('Erro ao exibir toast');
     }
   }
 
-  async showLoading(message: string = 'Enviando...') {
+  async showLoading(message: string = 'Autenticando...') {
     try {
       this.loading = await this.loadingCtrl.create({
         message,
@@ -64,7 +64,7 @@ export class UtilsService {
 
       await this.loading.present();
     } catch {
-      console.error('Erro ao exibir loading!');
+      console.error('Erro ao exibir loading');
     }
   }
 
@@ -74,7 +74,7 @@ export class UtilsService {
         await this.loading.dismiss();
       }
     } catch {
-      console.error('Erro ao fechar loading!');
+      console.error('Erro ao fechar loading');
     }
   }
 }

@@ -178,7 +178,6 @@ export class AuthService implements OnDestroy {
 
   async signOut() {
     await this.auth.signOut();
-    this.ngOnDestroy();
     this.router.navigate(['/login']);
   }
 

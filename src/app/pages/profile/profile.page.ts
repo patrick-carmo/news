@@ -102,7 +102,6 @@ export class ProfilePage {
     } catch {
       this.utils.toastMessage({
         message: `Erro ao salvar preferência de biometria.`,
-        duration: 2000,
       });
     }
   }

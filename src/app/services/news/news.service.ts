@@ -99,7 +99,6 @@ export class NewsService implements OnDestroy {
 
     await this.utils.toastMessage({
       message: 'Faça login para salvar notícias',
-      color: 'warning',
     });
     throw new Error('Usuário não autenticado');
   }
@@ -110,12 +109,10 @@ export class NewsService implements OnDestroy {
         string: link,
       });
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao copiar link',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao copiar link',
+        color: 'danger',
+      });
     }
   }
 
@@ -125,12 +122,7 @@ export class NewsService implements OnDestroy {
         url,
       });
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao compartilhar notícia',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      console.error('Error');
     }
   }
 
@@ -138,12 +130,10 @@ export class NewsService implements OnDestroy {
     try {
       await Browser.open({ url });
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao abrir notícia',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao abrir notícia',
+        color: 'danger',
+      });
     }
   }
 }

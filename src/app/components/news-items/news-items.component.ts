@@ -109,7 +109,6 @@ export class NewsItemsComponent {
       if (!user)
         return await this.utils.toastMessage({
           message: 'Você precisa estar logado para curtir o post',
-          color: 'warning',
         });
 
       const like = await firstValueFrom(this.likeService.getLike(news, user));
@@ -130,12 +129,10 @@ export class NewsItemsComponent {
       news.liked = true;
       news.likes = likes + 1;
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao curtir',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao curtir',
+        color: 'danger',
+      });
     }
   }
 
@@ -172,15 +169,12 @@ export class NewsItemsComponent {
             },
           },
         ],
-        color: 'warning',
       });
     } catch (error: any) {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao alterar favoritos',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao alterar favoritos',
+        color: 'danger',
+      });
     }
   }
 

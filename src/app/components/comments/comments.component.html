@@ -6,9 +6,9 @@
     <ion-title>Comentários</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-text-center">
+<ion-content [class]="!comments.length ? 'ion-text-center ion-padding' : 'ion-text-center'">
   <div>
-    <ion-text class="ion-margin" *ngIf="!comments.length">Sem comentários no momento</ion-text>
+    <ion-text *ngIf="!comments.length">Sem comentários no momento</ion-text>
 
     <ion-list *ngIf="comments.length">
       <ion-item *ngFor="let comment of comments">

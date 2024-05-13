@@ -111,7 +111,6 @@ export class CommentsComponent implements OnDestroy {
       if (!user)
         return await this.utils.toastMessage({
           message: 'Você precisa estar logado para comentar',
-          color: 'warning',
         });
 
       this.commentsService.setComments(news, {
@@ -128,12 +127,10 @@ export class CommentsComponent implements OnDestroy {
 
       this.comment = '';
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao adicionar comentário',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao adicionar comentário',
+        color: 'danger',
+      });
     }
   }
 
@@ -161,7 +158,6 @@ export class CommentsComponent implements OnDestroy {
               if (!data.comment)
                 return await this.utils.toastMessage({
                   message: 'Comentário não pode ser vazio',
-                  color: 'warning',
                 });
 
               comment.content = data.comment;
@@ -176,18 +172,17 @@ export class CommentsComponent implements OnDestroy {
               await this.utils.toastMessage({
                 message: 'Comentário editado',
                 color: 'success',
+                duration: 1500,
               });
             },
           },
         ],
       });
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao editar comentário',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao editar comentário',
+        color: 'danger',
+      });
     }
   }
 
@@ -216,7 +211,6 @@ export class CommentsComponent implements OnDestroy {
 
       await this.utils.toastMessage({
         message: 'Comentário excluído',
-        color: 'warning',
         buttons: [
           {
             text: 'Desfazer',
@@ -231,18 +225,17 @@ export class CommentsComponent implements OnDestroy {
               await this.utils.toastMessage({
                 message: 'Comentário restaurado',
                 color: 'success',
+                duration: 1500,
               });
             },
           },
         ],
       });
     } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro ao excluir comentário',
-          color: 'danger',
-        })
-        .catch(() => console.error('Error'));
+      this.utils.toastMessage({
+        message: 'Erro ao excluir comentário',
+        color: 'danger',
+      });
     }
   }
 

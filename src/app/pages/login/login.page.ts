@@ -98,11 +98,6 @@ export class LoginPage {
   protected showPassword: boolean = false;
   protected showPasswordConfirm: boolean = false;
 
-  protected error: string | null = null;
-  protected message: string | null = null;
-
-  private messageTimeout: any;
-
   constructor() {
     addIcons({
       enterOutline,
@@ -135,11 +130,11 @@ export class LoginPage {
             /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/
           ),
         ]);
-
-      return this.form.get('confirmPassword')?.updateValueAndValidity();
+    } else {
+      this.form.get('confirmPassword')?.clearValidators();
     }
 
-    this.form.get('confirmPassword')?.clearValidators();
+    this.form.get('confirmPassword')?.updateValueAndValidity();
   }
 
   protected togglePassword(field: 'password' | 'confirmPassword' = 'password') {
@@ -151,67 +146,83 @@ export class LoginPage {
     this.showPasswordConfirm = !this.showPasswordConfirm;
   }
 
-  protected async openModal() {
-    const modal = await this.modalCtrl.create({
-      component: ResetPasswordComponent,
-      cssClass: 'login-modal',
-      breakpoints: [0, 0.4, 1],
-      initialBreakpoint: 0.4,
-    });
-    await modal.present();
+  protected async openResetPassword() {
+    try {
+      const modal = await this.modalCtrl.create({
+        component: ResetPasswordComponent,
+        breakpoints: [0, 0.4, 1],
+        initialBreakpoint: 0.4,
+      });
+      await modal.present();
+
+      const { data, role } = await modal.onWillDismiss();
+      if (role === 'error')
+        return await this.utils.toastMessage({
+          message: data,
+          color: 'danger',
+        });
+    } catch {
+      this.utils.toastMessage({
+        message: 'Erro interno do servidor',
+        color: 'danger',
+      });
+    }
   }
 
-  private showMessage(message: string, sucess: boolean = false) {
-    const field = sucess ? 'message' : 'error';
-    this.message = null;
-    this.error = null;
-    this[field] = message;
-    if (this.messageTimeout) clearTimeout(this.messageTimeout);
-    this.messageTimeout = setTimeout(
-      () => {
-        this[field] = null;
-      },
-      sucess ? 10000 : 6000
-    );
-  }
-
-  protected operation() {
+  protected async operation() {
     try {
       if (this.form.invalid)
-        return this.showMessage('Preencha corretamente os campos');
+        return await this.utils.toastMessage({
+          message: 'Preencha corretamente os campos',
+          duration: 2500,
+        });
 
       const { email, password, confirmPassword } = this.form.value;
 
       if (!email || !password)
-        return this.showMessage('Preencha todos os campos');
+        return await this.utils.toastMessage({
+          message: 'Preencha todos os campos',
+          duration: 2500,
+        });
 
       if (this.formType === 'login') {
         return this.emailAuth(email, password);
       }
 
       if (confirmPassword !== password)
-        return this.showMessage('As senhas não coincidem');
+        return await this.utils.toastMessage({
+          message: 'As senhas não coincidem',
+          duration: 2500,
+        });
 
       return this.emailRegister(email, password, confirmPassword);
     } catch {
-      this.showMessage('Erro interno do servidor');
+      this.utils.toastMessage({
+        message: 'Erro interno do servidor',
+        color: 'danger',
+      });
     }
   }
 
   protected async biometryAuth() {
-    if (!this.isNative) return this.showMessage('Biometria não disponível');
-
     try {
+      if (!this.isNative)
+        return await this.utils.toastMessage({
+          message: 'Biometria não disponível',
+        });
+
       const data = await this.auth.performBiometricVerification();
       if (!data) return;
 
-      if (typeof data === 'string') {
-        return this.showMessage(data);
-      }
+      if (typeof data === 'string')
+        return await this.utils.toastMessage({ message: data });
 
       await this.emailAuth(data.username, data.password);
-    } catch (error) {
-      this.showMessage('Erro interno do servidor');
+    } catch {
+      this.utils.toastMessage({
+        message: 'Erro interno do servidor',
+        color: 'danger',
+      });
     }
   }
 
@@ -221,11 +232,17 @@ export class LoginPage {
       const error = await this.auth.emailSignIn(email, password);
       await this.utils.dimisLoading();
 
-      if (error) return this.showMessage(error);
+      if (error)
+        return await this.utils.toastMessage({
+          message: error,
+        });
 
       this.auth.router.navigate(['/']);
     } catch {
-      this.showMessage('Erro interno do servidor');
+      this.utils.toastMessage({
+        message: 'Erro interno do servidor',
+        color: 'danger',
+      });
     }
   }
 
@@ -234,35 +251,52 @@ export class LoginPage {
     password: string,
     passwordConfirm: string
   ) {
-    if (password !== passwordConfirm) {
-      return this.showMessage('As senhas não coincidem');
-    }
+    if (password !== passwordConfirm)
+      return await this.utils.toastMessage({
+        message: 'As senhas não coincidem',
+        duration: 2500,
+      });
 
     try {
-      await this.utils.showLoading();
+      await this.utils.showLoading('Cadastrando...');
       const error = await this.auth.createUser(email, password);
       await this.utils.dimisLoading();
 
-      if (error) return this.showMessage(error);
+      if (error)
+        return await this.utils.toastMessage({
+          message: error,
+        });
 
-      return this.showMessage(
-        'Usuário criado com sucesso, verfique seu e-mail.',
-        true
-      );
+      return this.utils.toastMessage({
+        message: 'Usuário criado com sucesso, verfique seu e-mail.',
+        color: 'success',
+        duration: 6000,
+      });
     } catch {
-      this.showMessage('Erro interno do servidor');
+      this.utils.toastMessage({
+        message: 'Erro interno do servidor',
+        color: 'danger',
+      });
     }
   }
 
   protected async googleAuth() {
     try {
-      this.utils.showLoading('Autenticando...');
+      await this.utils.showLoading();
       const error = await this.auth.googleSignIn();
-      this.utils.dimisLoading();
+      await this.utils.dimisLoading();
 
-      error ? this.showMessage(error) : this.auth.router.navigate(['/']);
-    } catch (error: any) {
-      this.showMessage(error);
+      if (error) {
+        return this.utils.toastMessage({ message: error, color: 'warning' });
+      }
+
+      this.auth.router.navigate(['/']);
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro interno do servidor',
+        })
+        .then(() => this.utils.dimisLoading());
     }
   }
 }

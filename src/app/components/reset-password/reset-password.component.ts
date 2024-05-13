@@ -21,6 +21,7 @@ import {
   IonButtons,
 } from '@ionic/angular/standalone';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { UtilsService } from 'src/app/services/utils.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -46,13 +47,10 @@ import { AuthService } from 'src/app/services/auth/auth.service';
 export class ResetPasswordComponent {
   private modalCtrl = inject(ModalController);
   private auth = inject(AuthService);
+  private utils = inject(UtilsService);
   protected resetForm = inject(FormBuilder).group({
     resetEmail: ['', [Validators.required, Validators.email]],
   });
-
-  protected message: string | null = '';
-  protected success: boolean = false;
-  private messageTimeout: any;
 
   constructor() {}
 
@@ -62,39 +60,27 @@ export class ResetPasswordComponent {
 
   protected async confirm() {
     try {
-      if (this.resetForm.invalid) {
-        return this.showMessage('E-mail inválido.');
-      }
+      if (this.resetForm.invalid)
+        return await this.utils.toastMessage({
+          message: 'E-mail inválido.',
+          duration: 2000,
+        });
 
       const resetEmail = this.resetForm.get('resetEmail')?.value;
 
-      if (!resetEmail) return this.showMessage('E-mail inválido.');
+      if (!resetEmail)
+        return await this.utils.toastMessage({
+          message: 'E-mail inválido.',
+          duration: 2000,
+        });
 
       const error = await this.auth.resetPassword(resetEmail);
 
-      if (error) {
-        return this.showMessage(error);
-      }
+      if (error) return await this.utils.toastMessage({ message: error });
 
-      this.success = true;
-      return this.showMessage(
-        'E-mail de recuperação enviado com sucesso. Verifique sua caixa de entrada.'
-      );
-    } catch (error) {
-      return this.modalCtrl.dismiss(error, 'error');
+      return this.modalCtrl.dismiss(null, 'confirm');
+    } catch {
+      return this.modalCtrl.dismiss('Erro interno do servidor', 'error');
     }
-  }
-
-  private showMessage(message: string) {
-    this.message = message;
-
-    if (this.messageTimeout) clearTimeout(this.messageTimeout);
-    this.messageTimeout = setTimeout(
-      () => {
-        this.message = null;
-        this.success = false;
-      },
-      this.success ? 10000 : 5000
-    );
   }
 }
