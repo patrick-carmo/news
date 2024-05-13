@@ -18,13 +18,10 @@ export interface Comment {
   userId: string;
   content: string;
   date: Date;
-}
-
-export interface FormattedComment extends Comment {
   email: string;
   displayName?: string;
   photoURL?: string;
-  formattedDate: string;
+  formattedDate?: string;
 }
 
 export interface User {

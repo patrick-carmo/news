@@ -47,7 +47,7 @@ export class UtilsService {
         color,
         buttons,
         swipeGesture: 'vertical',
-        duration: 4000,
+        duration: 2000,
       });
 
       await toast.present();

@@ -15,7 +15,7 @@ export class CommentsService {
     const posts$ = this.firestore
       .collection('posts')
       .doc(data.id.toString())
-      .collection('comments')
+      .collection('comments', (ref) => ref.orderBy('date', 'desc'))
       .snapshotChanges();
 
     return posts$.pipe(

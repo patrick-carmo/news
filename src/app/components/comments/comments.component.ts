@@ -22,7 +22,7 @@ import {
   IonGrid,
   IonRow,
 } from '@ionic/angular/standalone';
-import { Comment, FormattedComment, News } from 'src/app/interfaces/interfaces';
+import { Comment, News } from 'src/app/interfaces/interfaces';
 import { CommentsService } from 'src/app/services/storage/news/comments.service';
 import { addIcons } from 'ionicons';
 import { createOutline, send, trashOutline } from 'ionicons/icons';
@@ -68,10 +68,8 @@ export class CommentsComponent implements OnDestroy {
 
   private comments$: Subscription | undefined;
   protected comments: Comment[] = [];
-  protected formattedComments: FormattedComment[] = [];
 
   protected comment: string = '';
-
   protected userId: string = '';
 
   @Input() news: News = {} as News;
@@ -91,85 +89,106 @@ export class CommentsComponent implements OnDestroy {
       this.comments$ = this.commentsService
         .getComments(this.news)
         .subscribe((comments: any) => {
-          comments.sort((a: Comment, b: Comment) => {
-            return a.date < b.date ? 1 : -1;
-          });
-
-          this.comments = comments;
-
-          const formattedComments = comments.map(
-            (comment: FormattedComment) => {
-              if (comment.date instanceof Timestamp) {
-                comment.formattedDate = formatDate(comment.date.toDate());
-              }
-              return comment;
+          const formattedComments = comments.map((comment: Comment) => {
+            if (comment.date instanceof Timestamp) {
+              comment.formattedDate = formatDate(comment.date.toDate());
             }
-          );
-          this.formattedComments = formattedComments;
+            return comment;
+          });
+          this.comments = formattedComments;
         });
     }
   }
 
   async addComment(news: News) {
-    if (!this.comment)
-      return await this.utils.toastMessage({
-        message: 'Insira um comentário',
-        color: 'warning',
+    try {
+      if (!this.comment) {
+        return;
+      }
+
+      const user = this.auth.getUser;
+
+      if (!user)
+        return await this.utils.toastMessage({
+          message: 'Você precisa estar logado para comentar',
+          color: 'warning',
+        });
+
+      this.commentsService.setComments(news, {
+        userId: user.uid,
+        content: this.comment,
+        date: new Date(),
       });
 
-    const user = this.auth.getUser;
-    this.commentsService.setComments(news, {
-      userId: user!.uid,
-      content: this.comment,
-      date: new Date(),
-    });
+      await this.utils.toastMessage({
+        message: 'Comentário adicionado',
+        color: 'success',
+        duration: 1000,
+      });
 
-    this.comment = '';
+      this.comment = '';
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao adicionar comentário',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 
-  updateComment(comment: Comment) {
-    this.utils.alertMessage({
-      message: 'Editar comentário',
-      inputs: [
-        {
-          name: 'comment',
-          type: 'text',
-          value: comment.content,
-        },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Salvar',
-          handler: async (data) => {
-            if (data.comment === comment.content) return;
+  async updateComment(comment: Comment) {
+    try {
+      await this.utils.alertMessage({
+        message: 'Editar comentário',
+        inputs: [
+          {
+            name: 'comment',
+            type: 'text',
+            value: comment.content,
+          },
+        ],
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Salvar',
+            handler: async (data) => {
+              if (data.comment === comment.content) return;
 
-            if (!data.comment)
-              return await this.utils.toastMessage({
-                message: 'Comentário não pode ser vazio',
-                color: 'warning',
+              if (!data.comment)
+                return await this.utils.toastMessage({
+                  message: 'Comentário não pode ser vazio',
+                  color: 'warning',
+                });
+
+              comment.content = data.comment;
+
+              await this.commentsService.updateComment(this.news, {
+                id: comment.id,
+                userId: comment.userId,
+                content: comment.content,
+                date: new Date(),
               });
 
-            comment.content = data.comment;
-
-            await this.commentsService.updateComment(this.news, {
-              id: comment.id,
-              userId: comment.userId,
-              content: comment.content,
-              date: new Date(),
-            });
-
-            await this.utils.toastMessage({
-              message: 'Comentário editado',
-              color: 'success',
-            });
+              await this.utils.toastMessage({
+                message: 'Comentário editado',
+                color: 'success',
+              });
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+    } catch {
+      this.utils
+        .toastMessage({
+          message: 'Erro ao editar comentário',
+          color: 'danger',
+        })
+        .catch(() => console.error('Error'));
+    }
   }
 
   async delComment(comment: Comment, del: boolean = false) {

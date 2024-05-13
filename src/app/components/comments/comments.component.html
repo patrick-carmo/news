@@ -11,22 +11,22 @@
     <ion-text class="ion-margin" *ngIf="!comments.length">Sem comentários no momento</ion-text>
 
     <ion-list *ngIf="comments.length">
-      <ion-item *ngFor="let comment of formattedComments">
+      <ion-item *ngFor="let comment of comments">
         <ion-avatar slot="start">
           <img src="{{comment.photoURL ?? 'https://ionicframework.com/docs/img/demos/avatar.svg'}}" />
         </ion-avatar>
         <ion-label>
           <h2>{{comment.displayName ?? comment.email}}</h2>
-          <p class="ion-text-wrap">{{comment.content}}</p>
+          <p class="ion-text-wrap content">{{comment.content}}</p>
           <p>{{comment.formattedDate}}</p>
 
           @if(comment.userId === userId){
           <div>
-            <ion-button fill="clear" shape="round" size="small" color="primary" (click)="updateComment(comment)">
+            <ion-button fill="clear" shape="round" size="small" color="primary" (click)="updateComment(comment)" class="ion-text-capitalize">
               Editar
               <ion-icon slot="icon-only" name="create-outline" size="small" slot="end"></ion-icon>
             </ion-button>
-            <ion-button fill="clear" shape="round" size="small" color="danger" (click)="delComment(comment)">
+            <ion-button fill="clear" shape="round" size="small" color="danger" (click)="delComment(comment)" class="ion-text-capitalize">
               Excluir
               <ion-icon slot="icon-only" name="trash-outline" size="small" slot="end"></ion-icon>
             </ion-button>
@@ -40,11 +40,11 @@
   </div>
 </ion-content>
 <ion-footer>
-  <form (ngSubmit)="addComment(news)" class="flex">
-    <ion-input fill="outline" shape="round" label="Comentar" labelPlacement="floating" name="comment" type="text" required [(ngModel)]="comment">
+  <form (ngSubmit)="addComment(news)" class="flex ion-margin">
+    <ion-input fill="outline" name="comment" shape="round" label="Comentar" labelPlacement="floating" type="text" [(ngModel)]="comment">
     </ion-input>
 
-    <ion-button type="submit" fill="clear" shape="round" size="small" class="floating" (click)="addComment(news)">
+    <ion-button type="submit" fill="clear" shape="round" size="small" class="floating">
       <ion-icon slot="icon-only" name="send" size="small"></ion-icon>
     </ion-button>
   </form>
