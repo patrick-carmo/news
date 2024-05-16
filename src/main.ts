@@ -1,8 +1,11 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
-import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy, provideRouter } from '@angular/router';
 import {
-  IonicRouteStrategy,
+  ErrorHandler,
+  enableProdMode,
+  importProvidersFrom,
+} from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
+import {
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 
@@ -13,6 +16,7 @@ import { provideHttpClient } from '@angular/common/http';
 
 import { firebaseConfig } from './app/credentials';
 import { AngularFireModule } from '@angular/fire/compat';
+import { ErrorHandlerService } from './app/services/error-handler.service';
 
 if (environment.production) {
   enableProdMode();
@@ -20,12 +24,10 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: ErrorHandler, useClass: ErrorHandlerService },
     provideIonicAngular(),
     provideRouter(routes),
     provideHttpClient(),
-    importProvidersFrom(
-      AngularFireModule.initializeApp(firebaseConfig),
-    ),
+    importProvidersFrom(AngularFireModule.initializeApp(firebaseConfig)),
   ],
 });

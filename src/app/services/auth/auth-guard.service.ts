@@ -15,7 +15,6 @@ export class AuthGuardService implements CanActivate {
       const user = this.auth.getUser;
 
       if (user && user.emailVerified) {
-        this.auth.refreshToken(user);
         return true;
       }
 

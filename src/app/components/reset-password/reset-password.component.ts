@@ -59,28 +59,22 @@ export class ResetPasswordComponent {
   }
 
   protected async confirm() {
-    try {
-      if (this.resetForm.invalid)
-        return await this.utils.toastMessage({
-          message: 'E-mail inválido.',
-          duration: 2000,
-        });
+    if (this.resetForm.invalid)
+      return await this.utils.toastMessage({
+        message: 'E-mail inválido.',
+        duration: 2000,
+      });
 
-      const resetEmail = this.resetForm.get('resetEmail')?.value;
+    const resetEmail = this.resetForm.get('resetEmail')?.value;
 
-      if (!resetEmail)
-        return await this.utils.toastMessage({
-          message: 'E-mail inválido.',
-          duration: 2000,
-        });
+    if (!resetEmail)
+      return await this.utils.toastMessage({
+        message: 'E-mail inválido.',
+        duration: 2000,
+      });
 
-      const error = await this.auth.resetPassword(resetEmail);
+    await this.auth.resetPassword(resetEmail);
 
-      if (error) return await this.utils.toastMessage({ message: error });
-
-      return this.modalCtrl.dismiss(null, 'confirm');
-    } catch {
-      return this.modalCtrl.dismiss('Erro interno do servidor', 'error');
-    }
+    return this.modalCtrl.dismiss(null, 'confirm');
   }
 }

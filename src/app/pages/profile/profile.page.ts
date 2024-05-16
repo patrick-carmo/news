@@ -82,9 +82,11 @@ export class ProfilePage {
     addIcons({
       fingerPrintOutline,
     });
-    this.userPrefService.getBiometricPreferences().then((hasBiometry: boolean) => {
-      this.hasBiometry = hasBiometry;
-    });
+    this.userPrefService
+      .getBiometricPreferences()
+      .then((hasBiometry: boolean) => {
+        this.hasBiometry = hasBiometry;
+      });
 
     this.userPrefService.getLoginType().then((loginType: string) => {
       this.loginWithEmail = loginType === 'email';
@@ -96,13 +98,7 @@ export class ProfilePage {
   }
 
   protected async biometry(event: any) {
-    try {
-      this.hasBiometry = event.detail.checked;
-      await this.userPrefService.setBiometricPreferences(this.hasBiometry);
-    } catch {
-      this.utils.toastMessage({
-        message: `Erro ao salvar preferência de biometria.`,
-      });
-    }
+    this.hasBiometry = event.detail.checked;
+    await this.userPrefService.setBiometricPreferences(this.hasBiometry);
   }
 }

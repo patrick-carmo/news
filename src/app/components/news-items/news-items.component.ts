@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import {
   IonItem,
   IonCard,
@@ -103,63 +103,39 @@ export class NewsItemsComponent {
   }
 
   protected async toggleLike(news: News) {
-    try {
-      const user = this.auth.getUser;
+    const user = this.auth.getUser;
 
-      if (!user)
-        return await this.utils.toastMessage({
-          message: 'Você precisa estar logado para curtir o post',
-        });
-
-      const like = await firstValueFrom(this.likeService.getLike(news, user));
-
-      const likes = (await firstValueFrom(this.likeService.getLikes(news)))
-        .length;
-
-      if (like.exists) {
-        this.likeService.removeLike(news, user);
-        this.likeService.removeUserLike(news, user);
-        news.liked = false;
-        news.likes = likes - 1;
-        return;
-      }
-
-      await this.likeService.setLike(news, user);
-      await this.likeService.setUserLike(news, user);
-      news.liked = true;
-      news.likes = likes + 1;
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro ao curtir',
-        color: 'danger',
+    if (!user)
+      return await this.utils.toastMessage({
+        message: 'Você precisa estar logado para curtir o post',
       });
+
+    const like = await firstValueFrom(this.likeService.getLike(news, user));
+
+    const likes = (await firstValueFrom(this.likeService.getLikes(news)))
+      .length;
+
+    if (like.exists) {
+      this.likeService.removeLike(news, user);
+      this.likeService.removeUserLike(news, user);
+      news.liked = false;
+      news.likes = likes - 1;
+      return;
     }
+
+    await this.likeService.setLike(news, user);
+    await this.likeService.setUserLike(news, user);
+    news.liked = true;
+    news.likes = likes + 1;
   }
 
   protected async toogleBookmark(item: any) {
-    try {
-      const result = await this.news.toggleBookmarksStorage(item);
+    const result = await this.news.toggleBookmarksStorage(item);
 
-      if (result) {
-        await this.utils.toastMessage({
-          message: 'Notícia salva',
-          color: 'success',
-          buttons: [
-            {
-              text: 'Desfazer',
-              role: 'cancel',
-              handler: () => {
-                return this.toogleBookmark(item);
-              },
-            },
-          ],
-        });
-
-        return;
-      }
-
+    if (result) {
       await this.utils.toastMessage({
-        message: 'Notícia removida',
+        message: 'Notícia salva',
+        color: 'success',
         buttons: [
           {
             text: 'Desfazer',
@@ -170,12 +146,22 @@ export class NewsItemsComponent {
           },
         ],
       });
-    } catch (error: any) {
-      this.utils.toastMessage({
-        message: 'Erro ao alterar favoritos',
-        color: 'danger',
-      });
+
+      return;
     }
+
+    await this.utils.toastMessage({
+      message: 'Notícia removida',
+      buttons: [
+        {
+          text: 'Desfazer',
+          role: 'cancel',
+          handler: () => {
+            return this.toogleBookmark(item);
+          },
+        },
+      ],
+    });
   }
 
   protected async showLikes(news: News) {

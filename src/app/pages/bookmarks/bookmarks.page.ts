@@ -51,9 +51,12 @@ export class BookmarksPage implements OnDestroy {
   constructor() {
     this.user$ = this.auth.authState.subscribe((user) => {
       if (user) {
-        this.bookmarks$ = this.news.getObsBookmarks().subscribe((news) => {
-          this.items = news;
-        });
+        if (!this.bookmarks$)
+          this.bookmarks$ = this.news
+            .getObsBookmarks()
+            .subscribe(async (news) => {
+              this.items = await this.news.formatNews(news);
+            });
       }
     });
   }

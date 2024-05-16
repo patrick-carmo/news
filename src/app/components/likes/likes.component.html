@@ -6,7 +6,7 @@
     <ion-title>Likes</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-text-center">
+<ion-content [class]="!users.length ? 'ion-text-center ion-padding' : 'ion-text-center'">
   <div>
     @if(!users.length){
     <ion-text class="ion-margin">Sem likes no momento</ion-text>

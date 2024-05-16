@@ -4,6 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { map } from 'rxjs';
 import { User } from 'src/app/interfaces/interfaces';
+import { CustomError } from 'src/app/utils/error/custom-error';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,11 @@ export class UserPreferencesService {
     return this.firestore
       .collection('users', (ref) => ref.where('uid', 'in', userIds))
       .get()
-      .pipe(map((users) => users.docs.map((user) => user.data())));
+      .pipe(
+        map((users) => {
+          return users.docs.map((user) => user.data());
+        })
+      );
   }
 
   setUser(user: User) {
@@ -79,7 +84,7 @@ export class UserPreferencesService {
 
       return credentials;
     } catch {
-      return 'Credenciais não encontradas, faça login manualmente.';
+      throw new CustomError('Credenciais não encontradas');
     }
   }
 

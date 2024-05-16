@@ -1,8 +1,8 @@
 {
   "name": "news",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "author": "Patrick do Carmo",
+  "homepage": "https://news-team-5.vercel.app/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

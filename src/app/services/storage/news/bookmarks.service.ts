@@ -10,38 +10,34 @@ export class BookmarksService {
 
   constructor() {}
 
-  getBookmarks(user: User) {
+  userBookmarks(user: User) {
+    return this.firestore
+      .collection('users')
+      .doc(user.uid)
+      .collection('bookmarks');
+  }
+
+  userBookmark(user: User, data: News) {
     return this.firestore
       .collection('users')
       .doc(user.uid)
       .collection('bookmarks')
-      .valueChanges();
+      .doc(data.id.toString());
+  }
+
+  getBookmarks(user: User) {
+    return this.userBookmarks(user).valueChanges();
   }
 
   getBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.uid)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .get();
+    return this.userBookmark(user, data).get();
   }
 
   setBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.uid)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .set(data);
+    return this.userBookmark(user, data).set(data);
   }
 
   delBookmark(user: User, data: News) {
-    return this.firestore
-      .collection('users')
-      .doc(user.uid)
-      .collection('bookmarks')
-      .doc(data.id.toString())
-      .delete();
+    return this.userBookmark(user, data).delete();
   }
 }

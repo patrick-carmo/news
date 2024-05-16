@@ -53,9 +53,41 @@ import { register as registerSwiper } from 'swiper/element/bundle';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class DevsPage {
+  protected readonly devs: {
+    name: string;
+    role?: string;
+    img?: string;
+    description?: string;
+  }[] = [
+    {
+      name: 'Felipe Guedes',
+      img: '../../assets/img/felipe.jpg',
+    },
+    {
+      name: 'Iure Freire',
+      img: '../../assets/img/iure.jpg',
+    },
+    {
+      name: 'Lorrany Ferreira',
+      img: '../../assets/img/lorrany.jpg',
+    },
+    {
+      name: 'Patrick',
+      // role: 'Desenvolvedor Back-End',
+      img: '../../assets/img/patrick.jpg',
+      // description:
+      //   'JavaScript | TypeScript | Node.js | Express.js | Nest.js | PostgreSQL',
+    },
+    {
+      name: 'Thayná Miranda',
+      img: '../../assets/img/thayna.jpg',
+      // description: 'Estudante de Análise e Desenvolvimento de Sistema.',
+    },
+  ];
+
   constructor() {}
 
-  async ionViewWillEnter(){
-    registerSwiper()
+  async ionViewWillEnter() {
+    registerSwiper();
   }
 }

@@ -101,142 +101,121 @@ export class CommentsComponent implements OnDestroy {
   }
 
   async addComment(news: News) {
-    try {
-      if (!this.comment) {
-        return;
-      }
-
-      const user = this.auth.getUser;
-
-      if (!user)
-        return await this.utils.toastMessage({
-          message: 'Você precisa estar logado para comentar',
-        });
-
-      this.commentsService.setComments(news, {
-        userId: user.uid,
-        content: this.comment,
-        date: new Date(),
-      });
-
-      await this.utils.toastMessage({
-        message: 'Comentário adicionado',
-        color: 'success',
-        duration: 1000,
-      });
-
-      this.comment = '';
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro ao adicionar comentário',
-        color: 'danger',
-      });
+    if (!this.comment) {
+      return;
     }
+
+    const user = this.auth.getUser;
+
+    if (!user)
+      return await this.utils.toastMessage({
+        message: 'Você precisa estar logado para comentar',
+      });
+
+    await this.commentsService.setComment(news, {
+      userId: user.uid,
+      content: this.comment,
+      date: new Date(),
+    });
+
+    await this.utils.toastMessage({
+      message: 'Comentário adicionado',
+      color: 'success',
+      duration: 1000,
+    });
+
+    this.comment = '';
   }
 
   async updateComment(comment: Comment) {
-    try {
-      await this.utils.alertMessage({
-        message: 'Editar comentário',
-        inputs: [
-          {
-            name: 'comment',
-            type: 'text',
-            value: comment.content,
+    await this.utils.alertMessage({
+      message: 'Editar comentário',
+      inputs: [
+        {
+          name: 'comment',
+          type: 'text',
+          value: comment.content,
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Salvar',
+          handler: async (data) => {
+            if (data.comment === comment.content) return;
+
+            if (!data.comment)
+              return await this.utils.toastMessage({
+                message: 'Comentário não pode ser vazio',
+              });
+
+            comment.content = data.comment;
+
+            await this.commentsService.updateComment(this.news, {
+              id: comment.id,
+              userId: comment.userId,
+              content: comment.content,
+              date: new Date(),
+            });
+
+            await this.utils.toastMessage({
+              message: 'Comentário editado',
+              color: 'success',
+              duration: 1500,
+            });
           },
-        ],
+        },
+      ],
+    });
+  }
+
+  async delComment(comment: Comment, del: boolean = false) {
+    if (!del)
+      return await this.utils.alertMessage({
+        message: 'Deseja excluir o comentário?',
         buttons: [
           {
             text: 'Cancelar',
             role: 'cancel',
           },
           {
-            text: 'Salvar',
-            handler: async (data) => {
-              if (data.comment === comment.content) return;
-
-              if (!data.comment)
-                return await this.utils.toastMessage({
-                  message: 'Comentário não pode ser vazio',
-                });
-
-              comment.content = data.comment;
-
-              await this.commentsService.updateComment(this.news, {
-                id: comment.id,
-                userId: comment.userId,
-                content: comment.content,
-                date: new Date(),
-              });
-
-              await this.utils.toastMessage({
-                message: 'Comentário editado',
-                color: 'success',
-                duration: 1500,
-              });
-            },
-          },
-        ],
-      });
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro ao editar comentário',
-        color: 'danger',
-      });
-    }
-  }
-
-  async delComment(comment: Comment, del: boolean = false) {
-    try {
-      if (!del)
-        return await this.utils.alertMessage({
-          message: 'Deseja excluir o comentário?',
-          buttons: [
-            {
-              text: 'Cancelar',
-              role: 'cancel',
-            },
-            {
-              text: 'Excluir',
-              handler: async () => {
-                await this.delComment(comment, true);
-              },
-            },
-          ],
-        });
-
-      if (this.comments.length === 1) this.comments = [];
-
-      await this.commentsService.delComment(this.news, comment);
-
-      await this.utils.toastMessage({
-        message: 'Comentário excluído',
-        buttons: [
-          {
-            text: 'Desfazer',
-            role: 'cancel',
+            text: 'Excluir',
             handler: async () => {
-              await this.commentsService.setComments(this.news, {
-                userId: comment.userId,
-                content: comment.content,
-                date: new Date(),
-              });
-
-              await this.utils.toastMessage({
-                message: 'Comentário restaurado',
-                color: 'success',
-                duration: 1500,
-              });
+              await this.delComment(comment, true);
             },
           },
         ],
       });
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro ao excluir comentário',
-        color: 'danger',
-      });
-    }
+
+    if (this.comments.length === 1) this.comments = [];
+
+    await this.commentsService.delComment(this.news, comment);
+
+    await this.utils.toastMessage({
+      message: 'Comentário excluído',
+      buttons: [
+        {
+          text: 'Desfazer',
+          role: 'cancel',
+          handler: async () => {
+            await this.commentsService.setComment(this.news, {
+              userId: comment.userId,
+              content: comment.content,
+              date: new Date(),
+            });
+
+            await this.utils.toastMessage({
+              message: 'Comentário restaurado',
+              color: 'success',
+              duration: 1500,
+            });
+          },
+        },
+      ],
+    });
   }
 
   ngOnDestroy() {

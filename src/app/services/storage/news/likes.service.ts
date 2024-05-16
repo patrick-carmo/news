@@ -17,25 +17,23 @@ export class LikesService {
       .valueChanges();
   }
 
-  setUserLike(news: News, user: User) {
+  usersLike(news: News, user: User) {
     return this.firestore
       .collection('users')
       .doc(user.uid)
       .collection('likes')
-      .doc(news.id.toString())
-      .set({
-        newsId: news.id,
-        date: new Date(),
-      });
+      .doc(news.id.toString());
+  }
+
+  setUserLike(news: News, user: User) {
+    return this.usersLike(news, user).set({
+      newsId: news.id,
+      date: new Date(),
+    });
   }
 
   removeUserLike(news: News, user: User) {
-    return this.firestore
-      .collection('users')
-      .doc(user.uid)
-      .collection('likes')
-      .doc(news.id.toString())
-      .delete();
+    return this.usersLike(news, user).delete();
   }
 
   getLikes(news: News) {
@@ -46,33 +44,26 @@ export class LikesService {
       .valueChanges();
   }
 
-  getLike(news: News, user: User) {
+  postsLikes(news: News, user: User) {
     return this.firestore
       .collection('posts')
       .doc(news.id.toString())
       .collection('likes')
-      .doc(user.uid)
-      .get();
+      .doc(user.uid);
+  }
+
+  getLike(news: News, user: User) {
+    return this.postsLikes(news, user).get();
   }
 
   setLike(news: News, user: User) {
-    return this.firestore
-      .collection('posts')
-      .doc(news.id.toString())
-      .collection('likes')
-      .doc(user.uid)
-      .set({
-        userId: user.uid,
-        date: new Date(),
-      });
+    return this.postsLikes(news, user).set({
+      userId: user.uid,
+      date: new Date(),
+    });
   }
 
   removeLike(news: News, user: User) {
-    return this.firestore
-      .collection('posts')
-      .doc(news.id.toString())
-      .collection('likes')
-      .doc(user.uid)
-      .delete();
+    return this.postsLikes(news, user).delete();
   }
 }

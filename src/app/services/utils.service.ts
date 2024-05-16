@@ -20,61 +20,45 @@ export class UtilsService {
   constructor() {}
 
   async alertMessage(fields: AlertOptions) {
-    try {
-      const { header, subHeader, message, buttons, inputs } = fields;
+    const { header, subHeader, message, buttons, inputs } = fields;
 
-      const alert = await this.alertCtrl.create({
-        header,
-        inputs: inputs || [],
-        subHeader,
-        message,
-        buttons: buttons || ['OK'],
-      });
+    const alert = await this.alertCtrl.create({
+      header,
+      inputs: inputs || [],
+      subHeader,
+      message,
+      buttons: buttons || ['OK'],
+    });
 
-      await alert.present();
-    } catch {
-      console.error('Erro ao exibir alerta');
-    }
+    await alert.present();
   }
 
   async toastMessage(fields: ToastOptions) {
-    try {
-      const { header, message, duration, color, buttons } = fields;
+    const { header, message, duration, color, buttons } = fields;
 
-      const toast = await this.toast.create({
-        header,
-        message,
-        color: color || 'warning',
-        buttons,
-        swipeGesture: 'vertical',
-        duration: duration ?? 4000,
-      });
+    const toast = await this.toast.create({
+      header,
+      message,
+      color: color || 'warning',
+      buttons,
+      swipeGesture: 'vertical',
+      duration: duration ?? 4000,
+    });
 
-      await toast.present();
-    } catch {
-      console.error('Erro ao exibir toast');
-    }
+    await toast.present();
   }
 
   async showLoading(message: string = 'Autenticando...') {
-    try {
-      this.loading = await this.loadingCtrl.create({
-        message,
-      });
+    this.loading = await this.loadingCtrl.create({
+      message,
+    });
 
-      await this.loading.present();
-    } catch {
-      console.error('Erro ao exibir loading');
-    }
+    await this.loading.present();
   }
 
   async dimisLoading() {
-    try {
-      if (this.loading) {
-        await this.loading.dismiss();
-      }
-    } catch {
-      console.error('Erro ao fechar loading');
+    if (this.loading) {
+      await this.loading.dismiss();
     }
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import {
   IonHeader,
   IonItem,
@@ -16,7 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { Timestamp } from 'firebase/firestore';
 import { firstValueFrom } from 'rxjs';
-import { Likes, News, User } from 'src/app/interfaces/interfaces';
+import { Likes, News } from 'src/app/interfaces/interfaces';
 import { LikesService } from 'src/app/services/storage/news/likes.service';
 import { UserPreferencesService } from 'src/app/services/storage/user-preferences.service';
 import { formatDate } from 'src/app/utils/formatDate';
@@ -54,7 +54,10 @@ export class LikesComponent {
   async ionViewWillEnter() {
     const data = await firstValueFrom(this.likeService.getLikes(this.news));
 
-    const likes = data.map((data) => {
+    const likes: {
+      userId: string;
+      date: string;
+    }[] = data.map((data) => {
       const date = data['date'] as Timestamp;
 
       const formattedDate = formatDate(date.toDate());
@@ -66,6 +69,10 @@ export class LikesComponent {
     });
 
     const userIds = likes.map((like) => like.userId);
+
+    if (!userIds.length) {
+      return;
+    }
 
     const users = (await firstValueFrom(
       this.userPrefService.getUsers(userIds)

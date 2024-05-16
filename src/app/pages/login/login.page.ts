@@ -147,103 +147,67 @@ export class LoginPage {
   }
 
   protected async openResetPassword() {
-    try {
-      const modal = await this.modalCtrl.create({
-        component: ResetPasswordComponent,
-        breakpoints: [0, 0.4, 1],
-        initialBreakpoint: 0.4,
-      });
-      await modal.present();
+    const modal = await this.modalCtrl.create({
+      component: ResetPasswordComponent,
+      breakpoints: [0, 0.4, 1],
+      initialBreakpoint: 0.4,
+    });
+    await modal.present();
 
-      const { data, role } = await modal.onWillDismiss();
-      if (role === 'error')
-        return await this.utils.toastMessage({
-          message: data,
-          color: 'danger',
-        });
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro interno do servidor',
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'error')
+      return await this.utils.toastMessage({
+        message: data,
         color: 'danger',
       });
-    }
   }
 
   protected async operation() {
-    try {
-      if (this.form.invalid)
-        return await this.utils.toastMessage({
-          message: 'Preencha corretamente os campos',
-          duration: 2500,
-        });
-
-      const { email, password, confirmPassword } = this.form.value;
-
-      if (!email || !password)
-        return await this.utils.toastMessage({
-          message: 'Preencha todos os campos',
-          duration: 2500,
-        });
-
-      if (this.formType === 'login') {
-        return this.emailAuth(email, password);
-      }
-
-      if (confirmPassword !== password)
-        return await this.utils.toastMessage({
-          message: 'As senhas não coincidem',
-          duration: 2500,
-        });
-
-      return this.emailRegister(email, password, confirmPassword);
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro interno do servidor',
-        color: 'danger',
+    if (this.form.invalid)
+      return await this.utils.toastMessage({
+        message: 'Preencha corretamente os campos',
+        duration: 2500,
       });
+
+    const { email, password, confirmPassword } = this.form.value;
+
+    if (!email || !password)
+      return await this.utils.toastMessage({
+        message: 'Preencha todos os campos',
+        duration: 2500,
+      });
+
+    if (this.formType === 'login') {
+      return await this.emailAuth(email, password);
     }
+
+    if (confirmPassword !== password)
+      return await this.utils.toastMessage({
+        message: 'As senhas não coincidem',
+        duration: 2500,
+      });
+
+    return await this.emailRegister(email, password, confirmPassword);
   }
 
   protected async biometryAuth() {
-    try {
-      if (!this.isNative)
-        return await this.utils.toastMessage({
-          message: 'Biometria não disponível',
-        });
-
-      const data = await this.auth.performBiometricVerification();
-      if (!data) return;
-
-      if (typeof data === 'string')
-        return await this.utils.toastMessage({ message: data });
-
-      await this.emailAuth(data.username, data.password);
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro interno do servidor',
-        color: 'danger',
+    if (!this.isNative)
+      return await this.utils.toastMessage({
+        message: 'Biometria não disponível',
       });
-    }
+
+    const data = await this.auth.performBiometricVerification();
+    if (!data) return;
+
+    await this.emailAuth(data.username, data.password);
   }
 
   private async emailAuth(email: string, password: string) {
-    try {
-      await this.utils.showLoading();
-      const error = await this.auth.emailSignIn(email, password);
-      await this.utils.dimisLoading();
+    await this.utils.showLoading();
+    await this.auth.emailSignIn(email, password);
+    await this.utils.dimisLoading();
 
-      if (error)
-        return await this.utils.toastMessage({
-          message: error,
-        });
-
-      this.auth.router.navigate(['/']);
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro interno do servidor',
-        color: 'danger',
-      });
-    }
+    await this.auth.router.navigate(['/']);
   }
 
   private async emailRegister(
@@ -257,46 +221,22 @@ export class LoginPage {
         duration: 2500,
       });
 
-    try {
-      await this.utils.showLoading('Cadastrando...');
-      const error = await this.auth.createUser(email, password);
-      await this.utils.dimisLoading();
+    await this.utils.showLoading('Cadastrando...');
+    await this.auth.createUser(email, password);
+    await this.utils.dimisLoading();
 
-      if (error)
-        return await this.utils.toastMessage({
-          message: error,
-        });
-
-      return this.utils.toastMessage({
-        message: 'Usuário criado com sucesso, verfique seu e-mail.',
-        color: 'success',
-        duration: 6000,
-      });
-    } catch {
-      this.utils.toastMessage({
-        message: 'Erro interno do servidor',
-        color: 'danger',
-      });
-    }
+    return this.utils.toastMessage({
+      message: 'Usuário criado com sucesso, verfique seu e-mail.',
+      color: 'success',
+      duration: 6000,
+    });
   }
 
   protected async googleAuth() {
-    try {
-      await this.utils.showLoading();
-      const error = await this.auth.googleSignIn();
-      await this.utils.dimisLoading();
+    await this.utils.showLoading();
+    await this.auth.googleSignIn();
+    await this.utils.dimisLoading();
 
-      if (error) {
-        return this.utils.toastMessage({ message: error, color: 'warning' });
-      }
-
-      this.auth.router.navigate(['/']);
-    } catch {
-      this.utils
-        .toastMessage({
-          message: 'Erro interno do servidor',
-        })
-        .then(() => this.utils.dimisLoading());
-    }
+    await this.auth.router.navigate(['/']);
   }
 }

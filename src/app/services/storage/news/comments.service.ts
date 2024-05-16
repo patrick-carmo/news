@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { forkJoin, map, switchMap } from 'rxjs';
-import { News } from 'src/app/interfaces/interfaces';
+import { Comment, News } from 'src/app/interfaces/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -40,47 +40,26 @@ export class CommentsService {
     );
   }
 
-  setComments(
-    news: News,
-    comment: {
-      userId: string;
-      content: string;
-      date: Date;
-    }
-  ) {
+  private comment(news: News, id: string) {
+    return this.firestore
+      .collection('posts')
+      .doc(news.id.toString())
+      .collection('comments')
+      .doc(id);
+  }
+
+  setComment(news: News, comment: Partial<Comment>) {
     const id = this.firestore.createId();
-
-    return this.firestore
-      .collection('posts')
-      .doc(news.id.toString())
-      .collection('comments')
-      .doc(id)
-      .set({ id, ...comment });
+    return this.comment(news, id).set({ id, ...comment });
   }
 
-  updateComment(
-    news: News,
-    comment: {
-      id: string;
-      userId: string;
-      content: string;
-      date: Date;
-    }
-  ) {
-    return this.firestore
-      .collection('posts')
-      .doc(news.id.toString())
-      .collection('comments')
-      .doc(comment.id)
-      .update(comment);
+  updateComment(news: News, comment: Partial<Comment>) {
+    const { id } = comment;
+    return this.comment(news, id!).update(comment);
   }
 
-  delComment(news: News, comment: any) {
-    return this.firestore
-      .collection('posts')
-      .doc(news.id.toString())
-      .collection('comments')
-      .doc(comment.id)
-      .delete();
+  delComment(news: News, comment: Partial<Comment>) {
+    const { id } = comment;
+    return this.comment(news, id!).delete();
   }
 }
